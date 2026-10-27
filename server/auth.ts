@@ -106,7 +106,7 @@ export function isDemoTeacherAllowed(): boolean {
   return process.env.ALLOW_DEMO_TEACHER === 'true';
 }
 
-export function getTeacherEmails(): string[] {
+function getTeacherEmails(): string[] {
   const raw = (process.env.TEACHER_EMAILS || '').trim().replace(/^['"]|['"]$/g, '');
   return raw
     .split(',')
