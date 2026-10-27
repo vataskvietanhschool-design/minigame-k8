@@ -1,0 +1,14 @@
+node_modules/
+build/
+dist/
+coverage/
+.data/
+.vercel/
+.codegraph/
+.DS_Store
+*.log
+.env*
+!.env.example
+*-firebase-adminsdk-*.json
+serviceAccount*.json
+minigame-k8-firebase-adminsdk-fbsvc-c26a752300.json

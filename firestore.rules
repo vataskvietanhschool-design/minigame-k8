@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Zero-Trust default deny for all direct client SDK access.
+    // All game mutations, state validations, PIN verifications, and teacher actions
+    // are strictly performed server-side via Node.js Express backend with Firebase Admin SDK.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "Class": {
+      "title": "Class",
+      "description": "Lớp học tin học",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "maxLength": 32 },
+        "displayName": { "type": "string", "maxLength": 64 },
+        "enabled": { "type": "boolean" },
+        "sortOrder": { "type": "number" }
+      },
+      "required": ["code", "displayName", "enabled", "sortOrder"]
+    },
+    "Session": {
+      "title": "Session",
+      "description": "Tiết học giáo viên điều tiết",
+      "type": "object",
+      "properties": {
+        "sessionId": { "type": "string", "maxLength": 128 },
+        "classCode": { "type": "string", "maxLength": 32 },
+        "title": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["DRAFT", "ACTIVE", "CLOSED"] },
+        "pin12": { "type": "string", "maxLength": 6, "minLength": 6 },
+        "pin23": { "type": "string", "maxLength": 6, "minLength": 6 },
+        "pin34": { "type": "string", "maxLength": 6, "minLength": 6 },
+        "pin45": { "type": "string", "maxLength": 6, "minLength": 6 }
+      },
+      "required": ["sessionId", "classCode", "title", "status", "pin12", "pin23", "pin34", "pin45"]
+    },
+    "Play": {
+      "title": "Play",
+      "description": "Lượt chơi của học sinh theo cặp session + device",
+      "type": "object",
+      "properties": {
+        "playId": { "type": "string", "maxLength": 128 },
+        "sessionId": { "type": "string", "maxLength": 128 },
+        "classCode": { "type": "string", "maxLength": 32 },
+        "deviceId": { "type": "string", "maxLength": 128 },
+        "fullName": { "type": "string", "maxLength": 80 },
+        "currentStation": { "type": "number" },
+        "phase": { "type": "string", "enum": ["QUESTION", "EXPLANATION", "WAIT_PIN", "COMPLETED"] },
+        "firstTryCorrectCount": { "type": "number" },
+        "totalAttempts": { "type": "number" },
+        "wrongAttempts": { "type": "number" },
+        "version": { "type": "number" }
+      },
+      "required": ["playId", "sessionId", "classCode", "deviceId", "fullName", "currentStation", "phase", "version"]
+    },
+    "PlayEvent": {
+      "title": "PlayEvent",
+      "description": "Sự kiện chi tiết trong lượt chơi",
+      "type": "object",
+      "properties": {
+        "eventId": { "type": "string", "maxLength": 128 },
+        "sessionId": { "type": "string", "maxLength": 128 },
+        "stationNo": { "type": "number" },
+        "eventType": { "type": "string", "enum": ["ANSWER", "EXPLANATION_ACK", "PIN_UNLOCK", "FINISH"] }
+      },
+      "required": ["eventId", "sessionId", "stationNo", "eventType"]
+    }
+  },
+  "firestore": {
+    "/classes/{classCode}": {
+      "schema": "Class",
+      "description": "Danh sách các lớp học"
+    },
+    "/sessions/{sessionId}": {
+      "schema": "Session",
+      "description": "Các tiết học do giáo viên quản lý"
+    },
+    "/plays/{playId}": {
+      "schema": "Play",
+      "description": "Lượt chơi độc nhất theo session và deviceId"
+    },
+    "/plays/{playId}/events/{eventId}": {
+      "schema": "PlayEvent",
+      "description": "Nhật ký sự kiện hành động của học sinh"
+    }
+  }
+}
