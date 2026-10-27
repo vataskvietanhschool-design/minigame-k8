@@ -106,10 +106,11 @@ export function isDemoTeacherAllowed(): boolean {
   return process.env.ALLOW_DEMO_TEACHER === 'true';
 }
 
-function getTeacherEmails(): string[] {
-  return (process.env.TEACHER_EMAILS || '')
+export function getTeacherEmails(): string[] {
+  const raw = (process.env.TEACHER_EMAILS || '').trim().replace(/^['"]|['"]$/g, '');
+  return raw
     .split(',')
-    .map((e) => e.trim().toLowerCase())
+    .map((e) => e.trim().toLowerCase().replace(/^['"]|['"]$/g, ''))
     .filter(Boolean);
 }
 
@@ -153,15 +154,22 @@ export async function teacherAuthMiddleware(
     const decoded = await adminAuth.verifyIdToken(token);
 
     const email = decoded.email?.toLowerCase();
+    const allowlist = getTeacherEmails();
     const isAllowed =
-      (email && decoded.email_verified !== false && getTeacherEmails().includes(email)) ||
+      (email && decoded.email_verified !== false && allowlist.includes(email)) ||
       decoded.admin === true;
 
     if (!isAllowed) {
+      const message =
+        allowlist.length === 0
+          ? 'Máy chủ chưa đọc được danh sách giáo viên. Biến TEACHER_EMAILS trên Vercel đang trống hoặc chưa được gắn vào bản deploy này.'
+          : decoded.email_verified === false
+            ? `Email ${decoded.email} chưa được Google xác minh.`
+            : `Email ${decoded.email} chưa nằm trong danh sách giáo viên (${allowlist.length} email đã cấu hình).`;
       res.status(403).json({
         error: {
           code: 'TEACHER_FORBIDDEN',
-          message: `Email ${decoded.email} chưa được cấp quyền quản trị bài dạy.`
+          message
         }
       });
       return;

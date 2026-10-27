@@ -28,6 +28,7 @@ import {
   AuthenticatedTeacherRequest,
   teacherAuthMiddleware,
   isDemoTeacherAllowed,
+  getTeacherEmails,
   PLAY_TOKEN_TTL_MS
 } from './auth.js';
 import { StationId, SessionData, PlayData, PlayEvent } from '../shared/types.js';
@@ -79,7 +80,11 @@ function recordPinFailure(playId: string): void {
 router.get('/system/status', async (_req: Request, res: Response) => {
   try {
     const status = await getSystemStatus();
-    res.json({ ...status, demoTeacherEnabled: isDemoTeacherAllowed() });
+    res.json({
+      ...status,
+      demoTeacherEnabled: isDemoTeacherAllowed(),
+      teacherAllowlistCount: getTeacherEmails().length
+    });
   } catch (err: any) {
     res.status(500).json({ error: { code: 'STATUS_ERROR', message: err.message } });
   }
