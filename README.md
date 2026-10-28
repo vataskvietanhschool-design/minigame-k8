@@ -1,4 +1,4 @@
-# GIẢI CỨU ROBOT – CHỌN NHÁNH ĐÚNG
+# GIẢI CỨU ROBOT – CHỌN NHÁNH ĐÚNG NHẤT
 
 Ứng dụng web giáo dục full-stack phục vụ nghiên cứu bài học môn Tin học lớp 8 (Bài 14: Cấu trúc điều khiển trong Scratch) được xây dựng theo đúng tài liệu đặc tả **ROBOT-RESCUE-SRS-1.0**.
 
