@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SessionData, PlayData, ClassItem } from '../../shared/types';
-import { Shield, RefreshCw, Download, Plus, Key, Users, CheckCircle, AlertCircle, ArrowLeft, LogIn, Lock } from 'lucide-react';
+import { Shield, RefreshCw, Download, Plus, Key, Users, CheckCircle, AlertCircle, ArrowLeft, LogIn, Lock, Trash2 } from 'lucide-react';
 import { fetchClasses, fetchSystemStatus } from '../utils/api';
 
 import { auth, googleProvider } from '../utils/firebase';
@@ -37,10 +37,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBackToGame
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [newClassCode, setNewClassCode] = useState<string>('8C1');
   const [newTitle, setNewTitle] = useState<string>('Tiết 14: Cấu trúc điều khiển Scratch');
-  const [newPin12, setNewPin12] = useState<string>('102938');
-  const [newPin23, setNewPin23] = useState<string>('482019');
-  const [newPin34, setNewPin34] = useState<string>('739104');
-  const [newPin45, setNewPin45] = useState<string>('004216');
+  const [newPin12, setNewPin12] = useState<string>('1209');
+  const [newPin23, setNewPin23] = useState<string>('4820');
+  const [newPin34, setNewPin34] = useState<string>('7391');
+  const [newPin45, setNewPin45] = useState<string>('0042');
 
   // Load status and classes on mount
   useEffect(() => {
@@ -145,14 +145,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBackToGame
   }, [selectedSessionId]);
 
   const handleGenerateRandomPins = () => {
-    const generate6Digit = () => Math.floor(100000 + Math.random() * 900000).toString();
-    const p1 = generate6Digit();
-    let p2 = generate6Digit();
-    while (p2 === p1) p2 = generate6Digit();
-    let p3 = generate6Digit();
-    while (p3 === p1 || p3 === p2) p3 = generate6Digit();
-    let p4 = generate6Digit();
-    while (p4 === p1 || p4 === p2 || p4 === p3) p4 = generate6Digit();
+    const generate4Digit = () => Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const p1 = generate4Digit();
+    let p2 = generate4Digit();
+    while (p2 === p1) p2 = generate4Digit();
+    let p3 = generate4Digit();
+    while (p3 === p1 || p3 === p2) p3 = generate4Digit();
+    let p4 = generate4Digit();
+    while (p4 === p1 || p4 === p2 || p4 === p3) p4 = generate4Digit();
 
     setNewPin12(p1);
     setNewPin23(p2);
@@ -210,6 +210,31 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBackToGame
       if (!res.ok) throw new Error(data.error?.message || 'Lỗi cập nhật trạng thái.');
 
       setSuccessMsg(`Đã cập nhật trạng thái thành ${newStatus}!`);
+      loadSessions(authToken);
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    }
+  };
+
+  const handleDeleteSession = async (session: SessionData) => {
+    const ok = window.confirm(
+      `Xóa tiết "${session.title}" của lớp ${session.classCode}? Lượt chơi của học sinh trong tiết này cũng bị xóa.`
+    );
+    if (!ok) return;
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const res = await fetch(`/api/teacher/sessions/${session.sessionId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${await getTeacherToken(authToken)}` }
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error?.message || 'Không thể xóa tiết học.');
+      if (selectedSessionId === session.sessionId) {
+        setSelectedSessionId('');
+        setPlays([]);
+      }
+      setSuccessMsg(`Đã xóa tiết học của lớp ${session.classCode}.`);
       loadSessions(authToken);
     } catch (err: any) {
       setErrorMsg(err.message);
@@ -394,11 +419,21 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBackToGame
                       </span>
                     </div>
                     <h4 className="text-xs font-semibold text-white truncate">{s.title}</h4>
-                    <div className="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-                      <span>Mã chuyển trạm:</span>
-                      <span className="font-mono text-amber-300 font-bold tracking-wider">
+                    <div className="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2 text-[11px] text-slate-400">
+                      <span className="font-mono text-amber-300 font-bold tracking-wider truncate">
                         {s.pin12} | {s.pin23} | {s.pin34} | {s.pin45}
                       </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSession(s);
+                        }}
+                        className="shrink-0 p-1 rounded-md text-rose-300 hover:bg-rose-950 hover:text-rose-200"
+                        title="Xóa tiết học"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -616,7 +651,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBackToGame
 
                 <div className="pt-2 border-t border-slate-800">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-amber-400">4 Mã PIN chuyển trạm (6 chữ số khác nhau):</span>
+                    <span className="font-bold text-amber-400">4 Mã PIN chuyển trạm (4 chữ số khác nhau):</span>
                     <button
                       type="button"
                       onClick={handleGenerateRandomPins}
@@ -631,7 +666,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBackToGame
                       <span className="text-[10px] text-slate-400">Trạm 1 → 2:</span>
                       <input
                         type="text"
-                        maxLength={6}
+                        maxLength={4}
                         value={newPin12}
                         onChange={(e) => setNewPin12(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white font-bold tracking-wider"
@@ -642,7 +677,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBackToGame
                       <span className="text-[10px] text-slate-400">Trạm 2 → 3:</span>
                       <input
                         type="text"
-                        maxLength={6}
+                        maxLength={4}
                         value={newPin23}
                         onChange={(e) => setNewPin23(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white font-bold tracking-wider"
@@ -653,7 +688,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBackToGame
                       <span className="text-[10px] text-slate-400">Trạm 3 → 4:</span>
                       <input
                         type="text"
-                        maxLength={6}
+                        maxLength={4}
                         value={newPin34}
                         onChange={(e) => setNewPin34(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white font-bold tracking-wider"
@@ -664,7 +699,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBackToGame
                       <span className="text-[10px] text-slate-400">Trạm 4 → 5:</span>
                       <input
                         type="text"
-                        maxLength={6}
+                        maxLength={4}
                         value={newPin45}
                         onChange={(e) => setNewPin45(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white font-bold tracking-wider"

@@ -25,28 +25,28 @@ test('validateStudentRegistration validates character bounds and class code', ()
   assert.equal(validRes.cleanName, 'Lê Hoàng Nam');
 });
 
-test('validatePinFormat correctly handles 6-digit strings including leading zeros', () => {
-  assert.equal(validatePinFormat('004216'), true);
-  assert.equal(validatePinFormat('123456'), true);
+test('validatePinFormat correctly handles 4-digit strings including leading zeros', () => {
+  assert.equal(validatePinFormat('0042'), true);
+  assert.equal(validatePinFormat('1234'), true);
+  assert.equal(validatePinFormat('123'), false);
   assert.equal(validatePinFormat('12345'), false);
-  assert.equal(validatePinFormat('1234567'), false);
-  assert.equal(validatePinFormat('12a456'), false);
+  assert.equal(validatePinFormat('12a4'), false);
 });
 
-test('validateSessionPins requires 4 distinct 6-digit PINs', () => {
+test('validateSessionPins requires 4 distinct 4-digit PINs', () => {
   const valid = validateSessionPins({
-    pin12: '100001',
-    pin23: '200002',
-    pin34: '300003',
-    pin45: '004216'
+    pin12: '1001',
+    pin23: '2002',
+    pin34: '3003',
+    pin45: '0042'
   });
   assert.equal(valid.isValid, true);
 
   const duplicate = validateSessionPins({
-    pin12: '100001',
-    pin23: '100001',
-    pin34: '300003',
-    pin45: '400004'
+    pin12: '1001',
+    pin23: '1001',
+    pin34: '3003',
+    pin45: '4004'
   });
   assert.equal(duplicate.isValid, false);
   assert.match(duplicate.error || '', /khác nhau/);
@@ -62,19 +62,22 @@ test('TC11: Trạm 2 câu hỏi "vì sao" có đáp án A', () => {
   assert.equal(correctRes.phase, 'EXPLANATION');
 });
 
-test('TC12: Trạm 4 điều kiện đúng 80°C có đáp án B', () => {
-  const ansA = evaluateStationAnswer(4, 'A', 0);
-  assert.equal(ansA.isCorrect, false);
+test('TC12: Trạm 4 ước số có đáp án A', () => {
+  const ansB = evaluateStationAnswer(4, 'B', 0);
+  assert.equal(ansB.isCorrect, false);
 
-  const ansB = evaluateStationAnswer(4, 'B', 1);
-  assert.equal(ansB.isCorrect, true);
-  assert.match(ansB.explanation?.reason || '', /nhiệt độ > 80°C là SAI tại/);
+  const ansA = evaluateStationAnswer(4, 'A', 1);
+  assert.equal(ansA.isCorrect, true);
+  assert.match(ansA.explanation?.reason || '', /chia hết cho B/);
 });
 
-test('TC13: Trạm 5 với 3 linh kiện có đáp án B', () => {
-  const ansB = evaluateStationAnswer(5, 'B', 0);
+test('TC13: Trạm 5 chẵn lẻ có đáp án B', () => {
+  const ansA = evaluateStationAnswer(5, 'A', 0);
+  assert.equal(ansA.isCorrect, false);
+
+  const ansB = evaluateStationAnswer(5, 'B', 1);
   assert.equal(ansB.isCorrect, true);
-  assert.match(ansB.explanation?.takeaway || '', /ít nhất/);
+  assert.match(ansB.explanation?.takeaway || '', /if then else/);
 });
 
 test('TC09: Trả lời sai lần 1, 2, 3 thì gợi ý tăng dần từ H1 -> H3 và dừng ở H3', () => {

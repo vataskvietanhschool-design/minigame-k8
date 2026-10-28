@@ -130,6 +130,15 @@ export async function startPlay(params: {
   return result;
 }
 
+export async function logoutPlay(): Promise<void> {
+  clearPlayToken();
+  try {
+    await fetch('/api/play/logout', { method: 'POST', credentials: 'same-origin' });
+  } catch {
+    // The local token is already cleared.
+  }
+}
+
 export async function fetchPlayState(): Promise<{ play: PlayData; sessionTitle?: string }> {
   return request<{ play: PlayData; sessionTitle?: string }>('/api/play/state');
 }

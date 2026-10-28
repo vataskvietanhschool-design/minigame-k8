@@ -7,8 +7,10 @@ import {
   getAllSessions,
   createSession,
   updateSession,
+  deleteSession,
   createOrGetPlay,
   getPlayById,
+  reopenLegacyExplore,
   savePlayAndEvent,
   getPlaysBySession,
   getEventsBySession,
@@ -220,15 +222,25 @@ router.post('/play/start', async (req: Request, res: Response) => {
 });
 
 // ------------------- 5. PLAY: GET STATE -------------------
+router.post('/play/logout', (_req: Request, res: Response) => {
+  res.clearCookie('play_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  });
+  res.json({ success: true });
+});
+
 router.get('/play/state', playAuthMiddleware, async (req: AuthenticatedPlayRequest, res: Response) => {
   const { playId, sessionId } = req.playToken!;
 
   try {
-    const play = await getPlayById(playId);
-    if (!play) {
+    const storedPlay = await getPlayById(playId);
+    if (!storedPlay) {
       res.status(404).json({ error: { code: 'PLAY_NOT_FOUND', message: 'Không tìm thấy lượt chơi.' } });
       return;
     }
+    const play = reopenLegacyExplore(storedPlay);
 
     const session = await getSessionById(sessionId);
     if (session && session.status === 'CLOSED' && play.phase !== 'COMPLETED') {
@@ -287,11 +299,12 @@ router.post('/play/answer', playAuthMiddleware, async (req: AuthenticatedPlayReq
   }
 
   try {
-    const play = await getPlayById(playId);
-    if (!play) {
+    const stored = await getPlayById(playId);
+    if (!stored) {
       res.status(404).json({ error: { code: 'PLAY_NOT_FOUND', message: 'Không tìm thấy lượt chơi.' } });
       return;
     }
+    const play = reopenLegacyExplore(stored);
 
     if (play.phase !== 'QUESTION') {
       res.status(400).json({
@@ -430,7 +443,7 @@ router.post('/play/unlock', playAuthMiddleware, async (req: AuthenticatedPlayReq
   const { eventId, pin } = req.body;
 
   if (!eventId || typeof pin !== 'string') {
-    res.status(400).json({ error: { code: 'INVALID_PIN_INPUT', message: 'Vui lòng nhập mã PIN 6 chữ số.' } });
+    res.status(400).json({ error: { code: 'INVALID_PIN_INPUT', message: 'Vui lòng nhập mã PIN 4 chữ số.' } });
     return;
   }
 
@@ -671,6 +684,20 @@ router.patch('/teacher/sessions/:id', teacherAuthMiddleware, async (req: Authent
     res.json(updated);
   } catch (err: any) {
     res.status(500).json({ error: { code: 'SERVER_ERROR', message: 'Lỗi cập nhật tiết học.' } });
+  }
+});
+
+router.delete('/teacher/sessions/:id', teacherAuthMiddleware, async (req: AuthenticatedTeacherRequest, res: Response) => {
+  const sessionId = req.params.id;
+  try {
+    const removed = await deleteSession(sessionId);
+    if (!removed) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Không tìm thấy tiết học.' } });
+      return;
+    }
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: { code: 'SERVER_ERROR', message: 'Không thể xóa tiết học.' } });
   }
 });
 

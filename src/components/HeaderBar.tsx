@@ -1,6 +1,6 @@
 import React from 'react';
 import { StationId } from '../../shared/types';
-import { BookOpen, UserCheck, ShieldCheck } from 'lucide-react';
+import { BookOpen, UserCheck, ShieldCheck, LogOut } from 'lucide-react';
 
 interface HeaderBarProps {
   fullName?: string;
@@ -9,6 +9,7 @@ interface HeaderBarProps {
   completedStations?: number[];
   onOpenReview?: () => void;
   onOpenTeacher?: () => void;
+  onExit?: () => void;
 }
 
 export const HeaderBar: React.FC<HeaderBarProps> = ({
@@ -17,7 +18,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   currentStation = 1,
   completedStations = [],
   onOpenReview,
-  onOpenTeacher
+  onOpenTeacher,
+  onExit
 }) => {
   return (
     <header className="w-full bg-slate-900/90 border-b border-slate-800 backdrop-blur sticky top-0 z-30 px-3 sm:px-6 py-2.5">
@@ -75,6 +77,17 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               <span className="px-1.5 py-0.2 bg-cyan-950 text-cyan-300 rounded text-[10px] font-bold">
                 {classCode}
               </span>
+              {onExit && (
+                <button
+                  type="button"
+                  onClick={onExit}
+                  className="ml-1 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-rose-200 hover:bg-rose-950"
+                  title="Thoát để người khác nhập tên"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Thoát
+                </button>
+              )}
             </div>
           )}
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlayData, ClientQuestionView, StationId, GamePhase, QuestionData } from '../shared/types';
 import { QUESTIONS_DB } from '../shared/questions';
-import { getOrCreateDeviceId, saveStoredPlay, getStoredPlay } from './utils/storage';
+import { getOrCreateDeviceId, saveStoredPlay, getStoredPlay, clearStoredPlay, clearDeviceId } from './utils/storage';
 import {
   fetchPlayState,
   fetchPlayQuestion,
@@ -11,7 +11,8 @@ import {
   unlockWithPin,
   finishMission,
   generateEventId,
-  clearPlayToken
+  clearPlayToken,
+  logoutPlay
 } from './utils/api';
 import { HeaderBar } from './components/HeaderBar';
 import { Screen01Start } from './views/Screen01Start';
@@ -21,6 +22,7 @@ import { Screen04WrongHint } from './views/Screen04WrongHint';
 import { Screen05CorrectTheory } from './views/Screen05CorrectTheory';
 import { Screen06WaitPin } from './views/Screen06WaitPin';
 import { Screen07Completed } from './views/Screen07Completed';
+import { StationPathMap, MapMode } from './components/StationPathMap';
 import { ReviewModal } from './views/ReviewModal';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { AlertTriangle, Clock } from 'lucide-react';
@@ -30,7 +32,7 @@ export default function App() {
     return window.location.pathname.startsWith('/teacher') ? 'teacher' : 'game';
   });
 
-  const [deviceId] = useState<string>(() => getOrCreateDeviceId());
+  const [deviceId, setDeviceId] = useState<string>(() => getOrCreateDeviceId());
   const [play, setPlay] = useState<PlayData | null>(null);
   const [question, setQuestion] = useState<ClientQuestionView | null>(null);
   const [hasSeenIntro, setHasSeenIntro] = useState<boolean>(false);
@@ -53,6 +55,7 @@ export default function App() {
   const [isActionLoading, setIsActionLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [pinError, setPinError] = useState<string>('');
+  const [mapScene, setMapScene] = useState<MapMode | null>(null);
 
   // Initial restoration from server
   useEffect(() => {
@@ -76,7 +79,9 @@ export default function App() {
           updatedAt: Date.now()
         });
 
-        if (res.play.phase === 'QUESTION') {
+        if (res.play.phase === 'WAIT_PIN') {
+          setMapScene('pin');
+        } else if (res.play.phase === 'QUESTION') {
           await loadCurrentQuestion();
         } else if (res.play.phase === 'EXPLANATION') {
           const q = QUESTIONS_DB[res.play.currentStation];
@@ -128,8 +133,10 @@ export default function App() {
         updatedAt: Date.now()
       });
 
-      // If returning user already past station 1
-      if (!res.isNew && res.play.currentStation > 1) {
+      if (res.play.phase === 'WAIT_PIN') {
+        setHasSeenIntro(true);
+        setMapScene('pin');
+      } else if (!res.isNew && res.play.currentStation > 1) {
         setHasSeenIntro(true);
         if (res.play.phase === 'QUESTION') {
           await loadCurrentQuestion();
@@ -142,6 +149,22 @@ export default function App() {
     } finally {
       setIsActionLoading(false);
     }
+  };
+
+  const handleExitPlay = async () => {
+    await logoutPlay();
+    clearStoredPlay();
+    clearDeviceId();
+    setDeviceId(getOrCreateDeviceId());
+    setPlay(null);
+    setQuestion(null);
+    setHasSeenIntro(false);
+    setWrongState(null);
+    setExplanationState(null);
+    setMapScene(null);
+    setErrorMessage('');
+    setPinError('');
+    setShowReviewModal(false);
   };
 
   const handleEnterStation1 = async () => {
@@ -230,16 +253,16 @@ export default function App() {
 
     try {
       if (play.currentStation === 5) {
-        // Station 5 finished -> complete mission
         const res = await finishMission(eventId);
         setPlay(res.play);
         setExplanationState(null);
+        setMapScene('finale');
       } else {
-        // Station 1-4 -> transition to wait PIN
         const res = await acknowledgeExplanation(eventId);
         setPlay((prev) => (prev ? { ...prev, phase: res.phase } : null));
         setExplanationState(null);
         setPinError('');
+        setMapScene('walk');
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Lỗi xác nhận chuyển bước.');
@@ -266,6 +289,7 @@ export default function App() {
           : null
       );
       await loadCurrentQuestion();
+      setMapScene(null);
     } catch (err: any) {
       setPinError(err.message || 'Mã chưa chính xác. Em hãy kiểm tra lại mã giáo viên cung cấp.');
     } finally {
@@ -287,6 +311,7 @@ export default function App() {
         completedStations={play?.completedStations || []}
         onOpenReview={() => setShowReviewModal(true)}
         onOpenTeacher={() => setViewMode('teacher')}
+        onExit={play ? handleExitPlay : undefined}
       />
 
       {/* Global Error Alert */}
@@ -331,8 +356,26 @@ export default function App() {
               Giáo viên đã tạm dừng hoặc đóng tiết học này. Dữ liệu tiến trình của em đã được lưu an toàn.
             </p>
           </div>
+        ) : mapScene === 'walk' || mapScene === 'pin' || mapScene === 'finale' ? (
+          <StationPathMap
+            mode={mapScene}
+            completedStations={play.completedStations}
+            fromStation={play.currentStation}
+            toStation={mapScene === 'finale' ? 5 : Math.min(5, play.currentStation + 1)}
+            onWalkDone={() => setMapScene('pin')}
+            onShowResult={() => setMapScene(null)}
+            pinSlot={
+              mapScene === 'pin' ? (
+                <Screen06WaitPin
+                  currentStation={play.currentStation}
+                  isSubmitting={isActionLoading}
+                  error={pinError}
+                  onUnlock={handleUnlockPin}
+                />
+              ) : null
+            }
+          />
         ) : !hasSeenIntro ? (
-          /* Screen 02: Storyline & 5-Station Mission Briefing */
           <Screen02Intro
             fullName={play.fullName}
             classCode={play.classCode}
@@ -350,14 +393,6 @@ export default function App() {
             isFirstTry={explanationState.isFirstTry}
             isSubmitting={isActionLoading}
             onContinue={handleContinueAfterExplanation}
-          />
-        ) : play.phase === 'WAIT_PIN' ? (
-          /* Screen 06: Enter 6-digit Teacher PIN */
-          <Screen06WaitPin
-            currentStation={play.currentStation}
-            isSubmitting={isActionLoading}
-            error={pinError}
-            onUnlock={handleUnlockPin}
           />
         ) : wrongState ? (
           /* Screen 04: Wrong Choice & Progressive Hint */

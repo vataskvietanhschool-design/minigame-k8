@@ -23,7 +23,7 @@ export function validateStudentRegistration(
 }
 
 export function validatePinFormat(pin: string): boolean {
-  return typeof pin === 'string' && /^\d{6}$/.test(pin);
+  return typeof pin === 'string' && /^\d{4}$/.test(pin);
 }
 
 export function validateSessionPins(pins: {
@@ -38,7 +38,7 @@ export function validateSessionPins(pins: {
     if (!validatePinFormat(pin)) {
       return {
         isValid: false,
-        error: `Mã PIN thứ ${i + 1} phải gồm đúng 6 chữ số (ví dụ: 004216).`
+        error: `Mã PIN thứ ${i + 1} phải gồm đúng 4 chữ số (ví dụ: 0421).`
       };
     }
   }

@@ -5,7 +5,6 @@ import {
   CreditCard, 
   CheckCircle2, 
   AlertTriangle, 
-  Sparkles, 
   RefreshCw, 
   RotateCw, 
   ShieldCheck, 
@@ -22,6 +21,7 @@ import { sounds } from '../utils/sound';
 
 interface InteractiveStationMinigameProps {
   stationNo: StationId;
+  onSolved?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -261,14 +261,12 @@ const STATION2_CARDS: KeycardItem[] = [
   },
 ];
 
-const Station2DragCardMinigame: React.FC = () => {
+const Station2DragCardMinigame: React.FC<{ onSolved?: () => void }> = ({ onSolved }) => {
   const [doorState, setDoorState] = useState<'CLOSED' | 'OPEN'>('CLOSED');
   const [activeSlotCard, setActiveSlotCard] = useState<KeycardItem | null>(null);
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [scanResult, setScanResult] = useState<'IDLE' | 'VALID' | 'INVALID'>('IDLE');
-  const [statusMessage, setStatusMessage] = useState<string>(
-    'Hãy bấm chuột kéo 1 trong 2 thẻ từ sang khe quẹt trên cửa để thử nghiệm!'
-  );
+  const [statusMessage, setStatusMessage] = useState<string>('Kéo một thẻ vào khe cửa.');
 
   // Dragging states
   const [draggingCard, setDraggingCard] = useState<KeycardItem | null>(null);
@@ -344,16 +342,13 @@ const Station2DragCardMinigame: React.FC = () => {
         sounds.playPowerUp();
         setScanResult('VALID');
         setDoorState('OPEN');
-        setStatusMessage(
-          `✅ THẺ ${card.symbol} HỢP LỆ (Điều kiện ĐÚNG) → Khối lệnh "Mở cửa" được thực thi! Cửa trượt mở.`
-        );
+        setStatusMessage('Cửa mở.');
+        onSolved?.();
       } else {
         sounds.playBeep(false);
         setScanResult('INVALID');
         setDoorState('CLOSED');
-        setStatusMessage(
-          `❌ THẺ ${card.symbol} KHÔNG HỢP LỆ (Điều kiện SAI) → Khối lệnh mở cửa không chạy! Cửa ban đầu đang đóng nên VẪN ĐÓNG!`
-        );
+        setStatusMessage('Cửa vẫn đóng.');
       }
     }, 600);
   };
@@ -365,7 +360,7 @@ const Station2DragCardMinigame: React.FC = () => {
     setActiveSlotCard(null);
     setScanResult('IDLE');
     setIsScanning(false);
-    setStatusMessage('Đã đặt lại vị trí thẻ. Hãy thử kéo thẻ còn lại để quan sát phản ứng của cửa!');
+    setStatusMessage('Kéo một thẻ vào khe cửa.');
   };
 
   return (
@@ -593,11 +588,7 @@ const Station2DragCardMinigame: React.FC = () => {
             : 'bg-cyan-950/60 border-cyan-800 text-cyan-200'
         }`}
       >
-        <strong>Mô phỏng thực tế:</strong> {statusMessage}
-      </div>
-
-      <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300">
-        💡 <strong>Quy luật Scratch:</strong> Cấu trúc <code>nếu &lt;điều kiện&gt; thì [hành động]</code> không có nhánh phụ. Vì vậy khi thẻ không hợp lệ (điều kiện sai), lệnh <code>mở cửa</code> không bao giờ được gọi. Cửa ban đầu vốn đang đóng nên <strong>vẫn tiếp tục đóng</strong>!
+        {statusMessage}
       </div>
     </div>
   );
@@ -606,14 +597,12 @@ const Station2DragCardMinigame: React.FC = () => {
 // ---------------------------------------------------------------------------
 // TRẠM 4: Minigame Lò Lửa Thiêu Hủy & Kéo Xô Nước Làm Mát
 // ---------------------------------------------------------------------------
-const Station4FurnaceWaterMinigame: React.FC = () => {
+const Station4FurnaceWaterMinigame: React.FC<{ onSolved?: () => void }> = ({ onSolved }) => {
   // Initial temperature: 83°C (hotter than 80°C)
   const [temperature, setTemperature] = useState<number>(83);
   const [bucketState, setBucketState] = useState<'EMPTY' | 'FULL'>('EMPTY');
   const [isSteaming, setIsSteaming] = useState<boolean>(false);
-  const [statusMessage, setStatusMessage] = useState<string>(
-    'Lò lửa đang cháy phừng phừng ở 83°C (Quá nóng!). Kéo xô rỗng vào bể nước để múc nước, rồi đổ vào lò lửa!'
-  );
+  const [statusMessage, setStatusMessage] = useState<string>('Múc nước rồi đổ vào lò.');
 
   // Dragging state for bucket
   const [isDraggingBucket, setIsDraggingBucket] = useState<boolean>(false);
@@ -718,12 +707,12 @@ const Station4FurnaceWaterMinigame: React.FC = () => {
   // Action: Fill bucket at water tank
   const handleFillBucket = () => {
     if (bucketState === 'FULL') {
-      setStatusMessage('Xô đã đầy nước rồi! Hãy kéo xô này đổ vào lò lửa.');
+      setStatusMessage('Xô đã đầy. Đổ vào lò.');
       return;
     }
     sounds.playSplash();
     setBucketState('FULL');
-    setStatusMessage('💧 Đã múc đầy xô nước mát! Hãy kéo xô đổ vào lò lửa để hạ nhiệt.');
+    setStatusMessage('Đã múc nước. Đổ vào lò.');
   };
 
   // Action: Pour water onto furnace
@@ -739,24 +728,13 @@ const Station4FurnaceWaterMinigame: React.FC = () => {
     setBucketState('EMPTY');
     setTimeout(() => setIsSteaming(false), 800);
 
-    setTemperature((prev) => {
-      const next = Math.max(78, prev - 1);
-      if (next > 80) {
-        setStatusMessage(
-          `💨 Xèo xèo! Nhiệt độ giảm xuống ${next}°C (vẫn > 80°C → Lò vẫn Quá nóng!). Hãy múc thêm xô nước nữa!`
-        );
-      } else if (next === 80) {
-        sounds.playPowerUp();
-        setStatusMessage(
-          `🎯 Nhiệt độ vừa giảm về đúng 80°C! Vì (80 > 80) là SAI → Khối lệnh ELSE được kích hoạt và hiển thị "Nhiệt độ an toàn"!`
-        );
-      } else {
-        setStatusMessage(
-          `❄️ Nhiệt độ giảm về ${next}°C! Vì (${next} > 80) là SAI → Khối lệnh ELSE hiển thị "Nhiệt độ an toàn"!`
-        );
-      }
-      return next;
-    });
+    const next = Math.max(78, temperature - 1);
+    setTemperature(next);
+    setStatusMessage(next > 80 ? 'Quá nóng.' : 'Nhiệt độ an toàn.');
+    if (next <= 80) {
+      sounds.playPowerUp();
+      onSolved?.();
+    }
   };
 
   // Reset furnace
@@ -765,13 +743,7 @@ const Station4FurnaceWaterMinigame: React.FC = () => {
     setTemperature(targetTemp);
     setBucketState('EMPTY');
     setIsSteaming(false);
-    if (targetTemp === 80) {
-      setStatusMessage('Đã đặt nhiệt độ lò về mốc đúng 80°C (theo tình huống đề bài). Hãy quan sát thông báo của robot bên trái!');
-    } else if (targetTemp === 81) {
-      setStatusMessage('Đã đặt nhiệt độ lò về 81°C (> 80°C). Hãy quan sát thông báo của robot bên trái!');
-    } else {
-      setStatusMessage('Đã đốt lại lò lửa về 83°C. Hãy múc nước đổ vào lò để hạ nhiệt độ!');
-    }
+    setStatusMessage('Múc nước rồi đổ vào lò.');
   };
 
   return (
@@ -785,9 +757,6 @@ const Station4FurnaceWaterMinigame: React.FC = () => {
               <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
                 <Thermometer className="w-4 h-4 text-cyan-400" />
                 CẢM BIẾN ROBOT (SENSOR HUD)
-              </span>
-              <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">
-                Điều kiện: &gt; 80°C
               </span>
             </div>
 
@@ -821,63 +790,9 @@ const Station4FurnaceWaterMinigame: React.FC = () => {
               <span className="text-[10px] font-mono uppercase tracking-wider block text-slate-300 mb-1">
                 THÔNG BÁO HIỂN THỊ CỦA ROBOT:
               </span>
-              <div className="text-lg font-black tracking-wide mb-1">
-                💬 "{temperature > 80 ? 'Quá nóng!' : 'Nhiệt độ an toàn'}"
+              <div className="text-lg font-black tracking-wide">
+                {temperature > 80 ? 'Quá nóng' : 'Nhiệt độ an toàn'}
               </div>
-              <span className="text-[11px] font-mono block opacity-90">
-                {temperature > 80
-                  ? `Nhánh THEN chạy vì (${temperature} > 80) là ĐÚNG`
-                  : `Nhánh ELSE chạy vì (${temperature} > 80) là SAI`}
-              </span>
-            </div>
-          </div>
-
-          {/* Critical 80°C Highlight Callout */}
-          {temperature === 80 && (
-            <div className="p-2.5 rounded-xl bg-amber-950/70 border border-amber-500/70 text-amber-200 text-xs leading-relaxed animate-in fade-in">
-              ⭐ <strong>ĐẶC BIỆT CHÚ Ý (ĐỀ BÀI):</strong> Tại đúng <strong>80°C</strong>, phép so sánh (80 &gt; 80) cho kết quả <strong>SAI</strong> (vì 80 không lớn hơn 80). Do đó khối lệnh rẽ vào nhánh <code>else</code> và hiển thị <strong>"Nhiệt độ an toàn"</strong>!
-            </div>
-          )}
-
-          {/* Quick Boundary Preset Buttons */}
-          <div className="pt-2 border-t border-slate-800">
-            <span className="text-[10px] font-mono text-slate-500 block mb-1.5 text-center">
-              THỬ NHANH CÁC MỐC NHIỆT ĐỘ:
-            </span>
-            <div className="grid grid-cols-3 gap-1.5">
-              <button
-                type="button"
-                onClick={() => handleReset(81)}
-                className={`py-1 rounded text-[10px] font-mono font-bold border transition ${
-                  temperature === 81
-                    ? 'bg-rose-900 border-rose-400 text-rose-200'
-                    : 'bg-slate-900 border-slate-700 text-slate-300 hover:text-white'
-                }`}
-              >
-                81°C (&gt; 80)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleReset(80)}
-                className={`py-1 rounded text-[10px] font-mono font-black border transition relative ${
-                  temperature === 80
-                    ? 'bg-amber-600 border-amber-300 text-white ring-2 ring-amber-400'
-                    : 'bg-slate-900 border-amber-600/60 text-amber-300 hover:text-white'
-                }`}
-              >
-                80°C (ĐỀ BÀI)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleReset(79)}
-                className={`py-1 rounded text-[10px] font-mono font-bold border transition ${
-                  temperature === 79
-                    ? 'bg-emerald-900 border-emerald-400 text-emerald-200'
-                    : 'bg-slate-900 border-slate-700 text-slate-300 hover:text-white'
-                }`}
-              >
-                79°C (≤ 80)
-              </button>
             </div>
           </div>
         </div>
@@ -899,9 +814,7 @@ const Station4FurnaceWaterMinigame: React.FC = () => {
                 Đốt lại lò (83°C)
               </button>
             </div>
-            <p className="text-[11px] text-slate-400 mb-3">
-              Kéo xô rỗng vào bể nước để múc nước, sau đó kéo xô đầy nước đổ vào lò lửa:
-            </p>
+            <p className="text-[11px] text-slate-400 mb-3">Múc nước, rồi đổ vào lò.</p>
 
             {/* Arena: Water Tank on Left, Bucket in Middle, Furnace on Right */}
             <div className="grid grid-cols-12 gap-2.5 items-stretch">
@@ -1010,7 +923,7 @@ const Station4FurnaceWaterMinigame: React.FC = () => {
 
           {/* Status Message */}
           <div className="p-3 bg-cyan-950/60 border border-cyan-800 rounded-xl text-xs text-cyan-200 leading-relaxed">
-            <strong>Mô phỏng thực tế:</strong> {statusMessage}
+            {statusMessage}
           </div>
         </div>
       </div>
@@ -1043,10 +956,6 @@ const Station4FurnaceWaterMinigame: React.FC = () => {
         </div>
       )}
 
-      {/* Educational Note */}
-      <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300">
-        💡 <strong>Quy luật Scratch:</strong> Toán tử <code>&gt;</code> (lớn hơn) đòi hỏi nhiệt độ phải vượt quá mốc 80. Khi nhiệt độ hạ về đúng <strong>80°C</strong>, điều kiện <code>nhiệt độ &gt; 80</code> là <strong>SAI</strong>, do đó khối lệnh <strong>không chạy nhánh then</strong> mà bắt buộc rẽ vào <strong>nhánh else</strong> để hiển thị "Nhiệt độ an toàn"!
-      </div>
     </div>
   );
 };
@@ -1070,12 +979,10 @@ const ALL_ROBOT_COMPONENTS: RobotComponent[] = [
   { id: 'part_6', name: 'Mô-đun rơ-le', icon: '⚡', badge: 'Truyền dẫn' },
 ];
 
-const Station5ComponentBoxMinigame: React.FC = () => {
+const Station5ComponentBoxMinigame: React.FC<{ onSolved?: () => void }> = ({ onSolved }) => {
   // Right box collection (starts empty 0/5 as requested)
   const [collectedParts, setCollectedParts] = useState<RobotComponent[]>([]);
-  const [statusMessage, setStatusMessage] = useState<string>(
-    'Hộp nhiệm vụ bên phải đang trống (0/5 linh kiện). Hãy kéo linh kiện từ hộp kho bên trái bỏ sang bên phải!'
-  );
+  const [statusMessage, setStatusMessage] = useState<string>('Kéo linh kiện sang hộp bên phải.');
 
   // Dragging state
   const [draggingPart, setDraggingPart] = useState<RobotComponent | null>(null);
@@ -1150,14 +1057,11 @@ const Station5ComponentBoxMinigame: React.FC = () => {
 
     if (nextParts.length >= 5) {
       sounds.playPowerUp();
-      setStatusMessage(
-        `🎉 Tinh tút! Hộp đã đạt ${nextParts.length}/5 linh kiện (≥ 5, ĐIỀU KIỆN ĐÚNG) → Tờ giấy nhiệm vụ được TÍCH XANH HOÀN THÀNH và robot thông báo "Nhiệm vụ hoàn thành"!`
-      );
+      setStatusMessage('Tờ giấy đã đổi.');
+      onSolved?.();
     } else {
       sounds.playTick();
-      setStatusMessage(
-        `📦 Đã bỏ thêm 1 linh kiện vào hộp (hiện có ${nextParts.length}/5). Vẫn < 5 linh kiện (ĐIỀU KIỆN SAI) → Robot tiếp tục thông báo "Chưa đủ linh kiện".`
-      );
+      setStatusMessage('Tờ giấy chưa đổi.');
     }
   };
 
@@ -1166,31 +1070,7 @@ const Station5ComponentBoxMinigame: React.FC = () => {
     sounds.playTick();
     const nextParts = collectedParts.filter((c) => c.id !== part.id);
     setCollectedParts(nextParts);
-    setStatusMessage(
-      `Bỏ bớt 1 linh kiện ra ngoài (còn ${nextParts.length}/5 linh kiện).`
-    );
-  };
-
-  // Fast presets
-  const handleSetPreset = (targetCount: number) => {
-    sounds.playTick();
-    if (targetCount === 0) {
-      setCollectedParts([]);
-      setStatusMessage('Đã làm trống hộp bên phải (0/5 linh kiện). Hãy kéo linh kiện từ hộp bên trái sang!');
-    } else if (targetCount === 3) {
-      const parts = ALL_ROBOT_COMPONENTS.slice(0, 3);
-      setCollectedParts(parts);
-      setStatusMessage(
-        '🎯 Đã đặt 3 linh kiện vào hộp (đúng theo tình huống đề bài)! Vì 3 ≥ 5 là SAI → Robot rẽ vào nhánh ELSE và thông báo "Chưa đủ linh kiện".'
-      );
-    } else if (targetCount === 5) {
-      sounds.playPowerUp();
-      const parts = ALL_ROBOT_COMPONENTS.slice(0, 5);
-      setCollectedParts(parts);
-      setStatusMessage(
-        '✅ Đã thu thập đủ 5/5 linh kiện! Điều kiện 5 ≥ 5 là ĐÚNG → Tờ giấy nhiệm vụ được TÍCH XANH và robot thông báo "Nhiệm vụ hoàn thành"!'
-      );
-    }
+    setStatusMessage('Tờ giấy chưa đổi.');
   };
 
   const isCompleted = collectedParts.length >= 5;
@@ -1212,7 +1092,7 @@ const Station5ComponentBoxMinigame: React.FC = () => {
               </span>
             </div>
             <p className="text-[11px] text-slate-400 mb-3">
-              Bấm giữ chuột để gắp linh kiện kéo sang hộp bên phải (hoặc nhấp trực tiếp):
+              Kéo linh kiện sang hộp bên phải.
             </p>
 
             {/* Component Items in Left Box */}
@@ -1245,47 +1125,6 @@ const Station5ComponentBoxMinigame: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Presets for Students */}
-          <div className="pt-2 border-t border-slate-800 space-y-1.5">
-            <span className="text-[10px] font-mono text-slate-500 block text-center">
-              THỬ NHANH CÁC MỐC ĐỀ BÀI:
-            </span>
-            <div className="grid grid-cols-3 gap-1.5">
-              <button
-                type="button"
-                onClick={() => handleSetPreset(0)}
-                className={`py-1.5 rounded text-[10px] font-mono font-bold border transition ${
-                  collectedParts.length === 0
-                    ? 'bg-slate-700 border-slate-400 text-white'
-                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                }`}
-              >
-                0/5 (Trống)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSetPreset(3)}
-                className={`py-1.5 rounded text-[10px] font-mono font-black border transition relative ${
-                  collectedParts.length === 3
-                    ? 'bg-amber-600 border-amber-300 text-white ring-2 ring-amber-400'
-                    : 'bg-slate-900 border-amber-600/60 text-amber-300 hover:text-white'
-                }`}
-              >
-                3/5 (ĐỀ BÀI)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSetPreset(5)}
-                className={`py-1.5 rounded text-[10px] font-mono font-bold border transition ${
-                  collectedParts.length === 5
-                    ? 'bg-emerald-600 border-emerald-300 text-white ring-2 ring-emerald-400'
-                    : 'bg-slate-900 border-emerald-700 text-emerald-300 hover:text-white'
-                }`}
-              >
-                5/5 (ĐỦ MỐC)
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Right Side: Quest Collection Box containing the Task Parchment (Paper Checklist) */}
@@ -1325,9 +1164,7 @@ const Station5ComponentBoxMinigame: React.FC = () => {
                   <span className="text-[10px] uppercase font-black tracking-widest text-amber-900 block">
                     📋 TỜ GIẤY NHIỆM VỤ ROBOT
                   </span>
-                  <span className="text-xs font-bold text-slate-800">
-                    Nhiệm vụ: Thu thập ít nhất 5 linh kiện
-                  </span>
+                  <span className="text-xs font-bold text-slate-800">Tờ giấy nhiệm vụ</span>
                 </div>
 
                 {/* Big Stamp / Tick Mark on Paper */}
@@ -1372,12 +1209,6 @@ const Station5ComponentBoxMinigame: React.FC = () => {
                   />
                 </div>
 
-                <div className="text-[10px] text-slate-700 flex items-center justify-between">
-                  <span>Điều kiện: (linh kiện &ge; 5)</span>
-                  <strong className={isCompleted ? 'text-emerald-800' : 'text-amber-800'}>
-                    {isCompleted ? 'KẾT QUẢ: ĐÚNG (THEN)' : 'KẾT QUẢ: SAI (ELSE)'}
-                  </strong>
-                </div>
               </div>
             </div>
 
@@ -1418,22 +1249,10 @@ const Station5ComponentBoxMinigame: React.FC = () => {
                   : 'bg-amber-950/80 border-amber-500 text-amber-200 shadow-amber-500/20'
               }`}
             >
-              <div className="text-sm font-black mb-0.5">
-                💬 THÔNG BÁO CỦA ROBOT: "{isCompleted ? 'Nhiệm vụ hoàn thành' : 'Chưa đủ linh kiện'}"
+              <div className="text-sm font-black">
+                {isCompleted ? 'Nhiệm vụ hoàn thành' : 'Chưa đủ linh kiện'}
               </div>
-              <span className="text-[10px] font-mono block">
-                {isCompleted
-                  ? `Nhánh THEN được thực thi vì (${collectedParts.length} ≥ 5) là ĐÚNG`
-                  : `Nhánh ELSE được thực thi vì (${collectedParts.length} ≥ 5) là SAI`}
-              </span>
             </div>
-
-            {/* Special Highlight for 3 Components (Question Target) */}
-            {collectedParts.length === 3 && (
-              <div className="p-2.5 rounded-xl bg-amber-950/90 border border-amber-400 text-amber-200 text-xs leading-relaxed animate-in fade-in">
-                ⭐ <strong>TÌNH HUỐNG ĐỀ BÀI (3 LINH KIỆN):</strong> Robot đang có đúng 3 linh kiện. Phép so sánh (3 &ge; 5) cho kết quả <strong>SAI</strong>, do đó khối lệnh Scratch rẽ vào nhánh <code>else</code> và thông báo <strong>"Chưa đủ linh kiện"</strong>!
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -1451,10 +1270,6 @@ const Station5ComponentBoxMinigame: React.FC = () => {
         </div>
       )}
 
-      {/* Educational Note */}
-      <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300">
-        💡 <strong>Quy luật Scratch:</strong> Điều kiện <code>&ge;</code> (lớn hơn hoặc bằng) yêu cầu số lượng từ 5 trở lên. Khi chỉ có 3 linh kiện, điều kiện là <strong>Sai</strong> và nhánh <code>else</code> luôn được kích hoạt.
-      </div>
     </div>
   );
 };
@@ -1462,7 +1277,7 @@ const Station5ComponentBoxMinigame: React.FC = () => {
 // ---------------------------------------------------------------------------
 // Main Interactive Minigames Router
 // ---------------------------------------------------------------------------
-export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProps> = ({ stationNo }) => {
+export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProps> = ({ stationNo, onSolved }) => {
   // Station 1: Battery level & Industrial Power Switch
   const [batteryPercent, setBatteryPercent] = useState<number>(40);
   const [isPowerSwitchedOn, setIsPowerSwitchedOn] = useState<boolean>(false);
@@ -1490,6 +1305,7 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
       if (batteryPercent >= 50) {
         sounds.playPowerUp();
         setPowerResultState('POWERED_ON');
+        onSolved?.();
       } else {
         sounds.playBeep(false);
         setPowerResultState('FAILED');
@@ -1513,6 +1329,7 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
         sounds.playBeep(true);
         sounds.playPowerUp();
         setLaserState('OFF');
+        onSolved?.();
       } else {
         sounds.playBeep(false);
         setLaserState('ALARM');
@@ -1532,15 +1349,7 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
   return (
     <div className="w-full bg-slate-900 border-2 border-cyan-500/50 rounded-2xl p-4 sm:p-5 shadow-2xl space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-        <span className="flex items-center gap-2 text-xs sm:text-sm font-black text-cyan-300 uppercase tracking-wide">
-          <Sparkles className="w-4 h-4 text-cyan-400 animate-spin" />
-          Khu vực tương tác mô phỏng thực tế
-        </span>
-        <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
-          Chạm / Kéo chuột để trải nghiệm
-        </span>
-      </div>
+      <div className="pb-2 border-b border-slate-800 text-xs font-bold text-cyan-300">Thử thách</div>
 
       {/* ================================================================ */}
       {/* TRẠM 1: NÚM VẶN PIN XOAY TRÒN & CÔNG TẮC BẬT NGUỒN VẬT LÝ         */}
@@ -1556,14 +1365,7 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
                 max={100}
                 step={5}
                 unit="%"
-                label="BƯỚC 1: DÙNG CHUỘT XOAY NÚM PIN"
-                targetMarker={50}
-                criticalMarkerLabel="Mốc ≥ 50%"
-                presets={[
-                  { value: 40, label: '40% (Đề bài)', desc: 'Dưới 50%' },
-                  { value: 50, label: '50% (Mốc chuẩn)', desc: 'Bằng 50%' },
-                  { value: 75, label: '75% (Đầy)', desc: 'Trên 50%' },
-                ]}
+                label="Xoay mức pin"
                 onChange={(val) => {
                   setBatteryPercent(val);
                   setIsPowerSwitchedOn(false);
@@ -1576,7 +1378,7 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
             <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 flex flex-col items-center justify-center space-y-4 shadow-inner">
               <div className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
                 <Power className="w-4 h-4 text-cyan-400" />
-                <span>BƯỚC 2: GẠT CÔNG TẮC BẬT NGUỒN</span>
+                <span>Gạt nguồn</span>
               </div>
 
               {/* Physical Flip Toggle Switch */}
@@ -1621,11 +1423,8 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
                   <>
                     <Zap className="w-8 h-8 text-emerald-400 animate-bounce mb-1" />
                     <span className="text-xs font-black text-emerald-300 uppercase tracking-wider">
-                      ROBOT KHỞI ĐỘNG THÀNH CÔNG!
+                      Robot đã bật
                     </span>
-                    <p className="text-[11px] text-emerald-200 mt-1">
-                      Vì Pin {batteryPercent}% ≥ 50% (ĐIỀU KIỆN ĐÚNG) → Khối lệnh "Bật nguồn" được thực thi!
-                    </p>
                   </>
                 )}
 
@@ -1633,26 +1432,16 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
                   <>
                     <AlertTriangle className="w-8 h-8 text-rose-400 animate-pulse mb-1" />
                     <span className="text-xs font-black text-rose-300 uppercase tracking-wider">
-                      KHÔNG THỂ BẬT NGUỒN!
+                      Chưa bật
                     </span>
-                    <p className="text-[11px] text-rose-200 mt-1">
-                      Vì Pin {batteryPercent}% &lt; 50% (ĐIỀU KIỆN SAI) → Robot bỏ qua lệnh bật nguồn (không làm gì cả)!
-                    </p>
                   </>
                 )}
 
                 {powerResultState === 'IDLE' && (
-                  <span className="text-xs text-slate-500 italic py-2">
-                    Xoay núm vặn mức pin rồi gạt công tắc nguồn để thử nghiệm.
-                  </span>
+                  <span className="text-xs text-slate-500 italic py-2">Gạt nguồn để thử.</span>
                 )}
               </div>
             </div>
-          </div>
-
-          {/* Educational Note */}
-          <div className="p-3 bg-cyan-950/60 border border-cyan-800 rounded-xl text-xs text-cyan-200">
-            💡 <strong>Quy luật Scratch:</strong> Cấu trúc <code>nếu ... thì</code> chỉ thực hiện hành động khi điều kiện đúng. Khi robot đang có 40% pin, phép so sánh (40 &ge; 50) là <strong>SAI</strong>, do đó robot <strong>không thực hiện bật nguồn</strong>!
           </div>
         </div>
       )}
@@ -1660,7 +1449,7 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
       {/* ================================================================ */}
       {/* TRẠM 2: MINIGAME KÉO THẢ THẺ TỪ VÀO KHE CỬA (KHÔNG KÝ HIỆU TRÊN CỬA) */}
       {/* ================================================================ */}
-      {stationNo === 2 && <Station2DragCardMinigame />}
+      {stationNo === 2 && <Station2DragCardMinigame onSolved={onSolved} />}
 
       {/* ================================================================ */}
       {/* TRẠM 3: BÀN PHÍM CƠ & HÀNG RÀO LASER BẢO VỆ                     */}
@@ -1707,12 +1496,9 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
 
             {/* Right Screen: Clue and empty frame until user submits code */}
             <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 flex flex-col justify-between shadow-inner space-y-3 min-h-[260px]">
-              {/* Clue message */}
-              <div className="p-3 rounded-xl bg-slate-900 border border-amber-500/40 text-center shadow">
-                <span className="text-xs sm:text-sm font-bold text-amber-300 block">
-                  💡 Gợi ý: Số lớn nhất 3 chữ số mà chia hết cho 3
-                </span>
-              </div>
+              <p className="text-sm font-medium text-amber-100 leading-snug">
+                Gợi ý: Dãy số gồm 3 chữ số giống nhau.
+              </p>
 
               {/* Central Frame: Empty Standby Frame OR Result Light (Shown only AFTER user presses Enter) */}
               <div className="flex-1 flex flex-col items-center justify-center">
@@ -1737,11 +1523,8 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
                       <CheckCircle2 className="w-9 h-9" />
                     </div>
                     <span className="text-xs font-black text-emerald-300 uppercase tracking-wider">
-                      ĐÈN XANH BẬT SÁNG (NHÁNH THEN)
+                      Đèn xanh
                     </span>
-                    <p className="text-xs text-emerald-100 text-center leading-relaxed">
-                      Mã <strong>{enteredPin}</strong> chính xác! Điều kiện mã = 999 là <strong>ĐÚNG</strong> &rarr; Khối lệnh thực thi nhánh <code>then</code>: Đặt đèn sang màu <strong>XANH</strong>!
-                    </p>
                   </div>
                 )}
 
@@ -1752,11 +1535,8 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
                       <AlertTriangle className="w-9 h-9" />
                     </div>
                     <span className="text-xs font-black text-rose-300 uppercase tracking-wider">
-                      ĐÈN ĐỎ BẬT SÁNG (NHÁNH ELSE)
+                      Đèn đỏ
                     </span>
-                    <p className="text-xs text-rose-100 text-center leading-relaxed">
-                      Mã <strong>{enteredPin}</strong> không đúng! Điều kiện mã = 999 là <strong>SAI</strong> &rarr; Khối lệnh thực thi nhánh <code>else</code>: Đặt đèn sang màu <strong>ĐỎ</strong>!
-                    </p>
                   </div>
                 )}
               </div>
@@ -1778,21 +1558,18 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
             </div>
           </div>
 
-          <div className="p-3 bg-cyan-950/60 border border-cyan-800 rounded-xl text-xs text-cyan-200">
-            💡 <strong>Quy luật Scratch:</strong> Cấu trúc <code>nếu ... thì ... không thì</code> (if-else) đảm bảo <strong>luôn có đúng 1 trong 2 nhánh</strong> được thực thi. Nếu điều kiện đúng chạy nhánh <code>then</code> (đèn xanh), ngược lại chạy nhánh <code>else</code> (đèn đỏ).
-          </div>
         </div>
       )}
 
       {/* ================================================================ */}
       {/* TRẠM 4: MINIGAME LÒ LỬA THIÊU HỦY & KÉO XÔ NƯỚC LÀM MÁT          */}
       {/* ================================================================ */}
-      {stationNo === 4 && <Station4FurnaceWaterMinigame />}
+      {stationNo === 4 && <Station4FurnaceWaterMinigame onSolved={onSolved} />}
 
       {/* ================================================================ */}
       {/* TRẠM 5: MINIGAME GẮP LINH KIỆN VÀO HỘP NHIỆM VỤ (0/5)             */}
       {/* ================================================================ */}
-      {stationNo === 5 && <Station5ComponentBoxMinigame />}
+      {stationNo === 5 && <Station5ComponentBoxMinigame onSolved={onSolved} />}
     </div>
   );
 };

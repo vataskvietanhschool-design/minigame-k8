@@ -1,8 +1,8 @@
 import React from 'react';
 import { RobotAvatar } from '../components/RobotAvatar';
-import { StationIllustration } from '../components/StationIllustration';
+import { QUESTIONS_DB } from '../../shared/questions';
 import { QuestionData, StationId } from '../../shared/types';
-import { CheckCircle2, ArrowRight, BookMarked, GitFork, Lightbulb, Check } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Lightbulb } from 'lucide-react';
 
 interface Screen05CorrectTheoryProps {
   stationNo: StationId;
@@ -42,64 +42,23 @@ export const Screen05CorrectTheory: React.FC<Screen05CorrectTheoryProps> = ({
         </div>
       </div>
 
-      {/* Visual illustration in success state */}
-      <StationIllustration stationNo={stationNo} isSuccess={true} />
+      {QUESTIONS_DB[stationNo].optionA.endsWith('.png') && (
+        <img
+          src={QUESTIONS_DB[stationNo].correctOption === 'A' ? QUESTIONS_DB[stationNo].optionA : QUESTIONS_DB[stationNo].optionB}
+          alt="Chương trình đúng"
+          className="w-full max-h-48 object-contain rounded-2xl bg-white border border-slate-700"
+        />
+      )}
 
-      {/* 4-Part Pedagogical Synthesis Card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
-        <div className="flex items-center gap-2 pb-3 border-b border-slate-800">
-          <BookMarked className="w-5 h-5 text-emerald-400" />
-          <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider">
-            Chốt kiến thức bài học – Trạm {stationNo}
-          </h3>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 text-xs sm:text-sm">
-          {/* Part 1: Correct Choice */}
-          <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-            <span className="text-[11px] font-mono font-bold text-cyan-400 uppercase tracking-wider block">
-              1. Đáp án phù hợp
-            </span>
-            <div className="text-white font-bold text-sm sm:text-base flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-black">
-                ✓
-              </span>
-              <span>{explanation.correctChoice}</span>
-            </div>
-          </div>
-
-          {/* Part 2: Reason */}
-          <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-            <span className="text-[11px] font-mono font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1">
-              <Check className="w-3.5 h-3.5 text-indigo-400" />
-              2. Vì sao lựa chọn cấu trúc này?
-            </span>
-            <p className="text-slate-300 leading-relaxed font-medium">
-              {explanation.reason}
-            </p>
-          </div>
-
-          {/* Part 3: Branches Analysis */}
-          <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-            <span className="text-[11px] font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
-              <GitFork className="w-3.5 h-3.5 text-amber-400" />
-              3. Diễn biến phân nhánh Đúng / Sai
-            </span>
-            <p className="text-slate-300 leading-relaxed font-medium">
-              {explanation.branchesAnalysis}
-            </p>
-          </div>
-
-          {/* Part 4: Takeaway / Rule of Thumb */}
-          <div className="p-3.5 bg-emerald-950/40 rounded-2xl border border-emerald-500/40 space-y-1">
-            <span className="text-[11px] font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-              <Lightbulb className="w-3.5 h-3.5 text-emerald-400" />
-              4. Điều cần ghi nhớ khi lập trình Scratch
-            </span>
-            <p className="text-emerald-100 font-semibold leading-relaxed">
-              {explanation.takeaway}
-            </p>
-          </div>
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <h3 className="text-sm font-black text-white">Ghi nhớ trạm {stationNo}</h3>
+        <p className="text-sm font-bold text-white">{explanation.correctChoice}</p>
+        <div className="p-3.5 bg-emerald-950/40 rounded-2xl border border-emerald-500/40 space-y-1">
+          <span className="text-[11px] font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+            <Lightbulb className="w-3.5 h-3.5 text-emerald-400" />
+            Ghi nhớ
+          </span>
+          <p className="text-emerald-100 font-semibold leading-relaxed text-sm">{explanation.takeaway}</p>
         </div>
 
         {/* Continue Button */}
@@ -110,7 +69,7 @@ export const Screen05CorrectTheory: React.FC<Screen05CorrectTheoryProps> = ({
             className="w-full sm:w-auto min-w-[280px] py-4 px-8 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-sm tracking-wide rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-emerald-500/20 transition active:scale-[0.98]"
           >
             <span>
-              {stationNo === 5 ? 'HOÀN THÀNH NHIỆM VỤ' : `TIẾP TỤC SANG TRẠM ${stationNo + 1}`}
+              {stationNo === 5 ? 'XEM BẢN ĐỒ' : 'ĐI TỚI TRẠM TIẾP'}
             </span>
             <ArrowRight className="w-5 h-5 text-slate-950" />
           </button>

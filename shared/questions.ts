@@ -79,52 +79,52 @@ export const QUESTIONS_DB: Record<StationId, QuestionData> = {
   },
   4: {
     stationNo: 4,
-    title: 'Trạm 4 – Sửa lỗi hệ thống',
+    title: 'Trạm 4 – Ước của hai số',
     scenario:
-      'Nếu nhiệt độ robot lớn hơn 80°C, robot hiển thị “Quá nóng!”. Nếu nhiệt độ nhỏ hơn hoặc bằng 80°C, robot hiển thị “Nhiệt độ an toàn”.',
+      'Có hai số nguyên A, B (đảm bảo A ≥ B). Nếu số A chia hết cho số B thì hiển thị “B là ước của A”.',
     question:
-      'Nếu nhiệt độ robot đúng bằng 80°C, thông báo nào xuất hiện và nên dùng cấu trúc nào?',
-    optionA: '“Quá nóng!”, dùng if then.',
-    optionB: '“Nhiệt độ an toàn”, dùng if then else.',
-    correctOption: 'B',
+      'Có hai số nguyên A, B (đảm bảo A ≥ B). Nếu số A chia hết cho số B thì hiển thị “B là ước của A”.',
+    optionA: '/assets/hinhcauhoi/k8_b14_game_tuong_tac/cau1_a.png',
+    optionB: '/assets/hinhcauhoi/k8_b14_game_tuong_tac/cau1_b.png',
+    correctOption: 'A',
     hints: [
-      '80 có lớn hơn 80 không?',
-      'Nếu điều kiện > 80°C sai thì chạy nhánh nào?',
-      '79°C và 80°C thuộc nhánh an toàn; 81°C thuộc nhánh quá nóng.'
+      'Đề chỉ nói việc cần làm khi A chia hết cho B. Có yêu cầu thêm câu khi không chia hết không?',
+      'Nếu đề không nêu việc làm khi điều kiện sai, chương trình không cần nhánh “nếu không thì”.',
+      'Chương trình đúng chỉ có: nếu A chia lấy dư B = 0 thì nói B là ước của A.'
     ],
     explanation: {
-      correctChoice: 'B. “Nhiệt độ an toàn”, dùng if then else.',
+      correctChoice: 'A. if then — chỉ nói “B là ước của A” khi A chia hết cho B.',
       reason:
-        'Điều kiện nhiệt độ > 80°C là SAI tại giá trị đúng bằng 80°C (vì 80 không lớn hơn 80). Do đó, chương trình sẽ thực hiện nhánh else: hiển thị “Nhiệt độ an toàn”.',
+        'Đề chỉ yêu cầu một việc: nếu A chia hết cho B thì hiển thị “B là ước của A”. Đề không yêu cầu thông báo khi A không chia hết cho B, nên không thêm nhánh “nếu không thì”.',
       branchesAnalysis:
-        'Phân biệt dấu so sánh: dấu “>” không chứa giá trị bằng. Các mức nhiệt độ: 79°C (SAI) → An toàn; 80°C (SAI) → An toàn; 81°C (ĐÚNG) → Quá nóng.',
+        'Hình A chỉ có khối nếu A chia lấy dư B = 0 thì nói B là ước của A. Hình B thêm câu “không là ước của A”. Đó là việc đề không yêu cầu.',
       takeaway:
-        'Lưu ý ranh giới so sánh trong lập trình Scratch: điều kiện “> 80” chỉ đúng từ 81 trở lên (nếu là số nguyên). Tại 80, điều kiện sai nên nhánh else sẽ được kích hoạt.'
+        'Khi bài chỉ nói việc cần làm nếu điều kiện đúng, dùng if then. Chỉ dùng if then else khi đề nêu rõ việc làm khi điều kiện sai.'
     }
   },
   5: {
     stationNo: 5,
-    title: 'Trạm 5 – Thoát hiểm',
+    title: 'Trạm 5 – Số chẵn và số lẻ',
     scenario:
-      'Robot cần thu thập ít nhất 5 linh kiện để hoàn thành nhiệm vụ. Nếu đủ 5 linh kiện trở lên, robot thông báo “Nhiệm vụ hoàn thành”. Nếu ít hơn 5 linh kiện, robot thông báo “Chưa đủ linh kiện”.',
+      'Có một số nguyên N (đảm bảo N khác 0). Nếu số N chia hết cho 2 thì hiển thị “là số chẳn”. Ngược lại, hiển thị “là số lẻ”.',
     question:
-      'Nếu robot chỉ thu thập được 3 linh kiện, kết quả nào đúng và cấu trúc nào phù hợp?',
-    optionA: '“Nhiệm vụ hoàn thành”, dùng if then.',
-    optionB: '“Chưa đủ linh kiện”, dùng if then else.',
+      'Có một số nguyên N (đảm bảo N khác 0). Nếu số N chia hết cho 2 thì hiển thị “là số chẳn”. Ngược lại, hiển thị “là số lẻ”.',
+    optionA: '/assets/hinhcauhoi/k8_b14_game_tuong_tac/cau2_a.png',
+    optionB: '/assets/hinhcauhoi/k8_b14_game_tuong_tac/cau2_b.png',
     correctOption: 'B',
     hints: [
-      'Số 3 đã đạt mức ít nhất 5 chưa?',
-      'Nếu chưa đủ 5 linh kiện, chương trình cần hiển thị thông báo nào?',
-      '3 < 5 nên thuộc nhánh ‘Chưa đủ linh kiện’; nếu đúng 5 sẽ là ‘Nhiệm vụ hoàn thành’.'
+      'Đề có hai kết quả khác nhau: chia hết cho 2 và không chia hết cho 2.',
+      'Điều kiện cần kiểm tra là N chia hết cho 2, không phải N bằng 0.',
+      'Nếu N chia lấy dư 2 = 0 thì nói là số chẳn; nếu không thì nói là số lẻ.'
     ],
     explanation: {
-      correctChoice: 'B. “Chưa đủ linh kiện”, dùng if then else.',
+      correctChoice: 'B. if then else — chia hết cho 2 thì là số chẳn, ngược lại là số lẻ.',
       reason:
-        'Cụm từ “ít nhất 5” nghĩa là điều kiện số linh kiện ≥ 5. Với 3 linh kiện, điều kiện (3 ≥ 5) là SAI, chương trình chuyển sang nhánh else và thông báo “Chưa đủ linh kiện”.',
+        'Đề yêu cầu hai thông báo. Nếu N chia hết cho 2 thì hiển thị “là số chẳn”. Ngược lại hiển thị “là số lẻ”. Chương trình cần đủ hai nhánh.',
       branchesAnalysis:
-        'Có hai thông báo cho hai trường hợp: Đủ linh kiện (≥ 5) và Chưa đủ (< 5). Do đó cần cấu trúc if then else để kiểm soát trọn vẹn cả hai nhánh.',
+        'Hình B kiểm tra N chia lấy dư 2 = 0: nhánh thì nói là số chẳn, nhánh không thì nói là số lẻ. Hình A kiểm tra N = 0 và luôn nói là số lẻ, nên không đúng đề.',
       takeaway:
-        'Điều kiện “ít nhất X” tương ứng toán tử “≥ X”. Khi dữ liệu đầu vào không thỏa mãn, nhánh else sẽ tiếp nhận xử lý.'
+        'Khi có việc làm nếu điều kiện đúng và việc làm khác nếu điều kiện sai, dùng if then else.'
     }
   }
 };

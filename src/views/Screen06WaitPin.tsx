@@ -16,7 +16,7 @@ export const Screen06WaitPin: React.FC<Screen06WaitPinProps> = ({
   error,
   onUnlock
 }) => {
-  const [pinDigits, setPinDigits] = useState<string[]>(['', '', '', '', '', '']);
+  const [pinDigits, setPinDigits] = useState<string[]>(['', '', '', '']);
   const [localError, setLocalError] = useState<string>('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -32,13 +32,13 @@ export const Screen06WaitPin: React.FC<Screen06WaitPinProps> = ({
 
     if (clean.length > 1) {
       // Pasting full 6-digit PIN
-      const chars = clean.slice(0, 6).split('');
+      const chars = clean.slice(0, 4).split('');
       const newDigits = [...pinDigits];
       chars.forEach((c, idx) => {
         newDigits[idx] = c;
       });
       setPinDigits(newDigits);
-      const nextIndex = Math.min(chars.length, 5);
+      const nextIndex = Math.min(chars.length, 3);
       inputRefs.current[nextIndex]?.focus();
       return;
     }
@@ -47,7 +47,7 @@ export const Screen06WaitPin: React.FC<Screen06WaitPinProps> = ({
     newDigits[index] = clean;
     setPinDigits(newDigits);
 
-    if (clean && index < 5) {
+    if (clean && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -60,14 +60,14 @@ export const Screen06WaitPin: React.FC<Screen06WaitPinProps> = ({
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4);
     if (pasted.length > 0) {
       const newDigits = [...pinDigits];
       pasted.split('').forEach((char, idx) => {
-        if (idx < 6) newDigits[idx] = char;
+        if (idx < 4) newDigits[idx] = char;
       });
       setPinDigits(newDigits);
-      const targetIndex = Math.min(pasted.length, 5);
+      const targetIndex = Math.min(pasted.length, 3);
       inputRefs.current[targetIndex]?.focus();
     }
   };
@@ -75,8 +75,8 @@ export const Screen06WaitPin: React.FC<Screen06WaitPinProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const fullPin = pinDigits.join('');
-    if (fullPin.length !== 6) {
-      setLocalError('Vui lòng nhập đủ 6 chữ số của mã chuyển trạm.');
+    if (fullPin.length !== 4) {
+      setLocalError('Vui lòng nhập đủ 4 chữ số của mã chuyển trạm.');
       return;
     }
     onUnlock(fullPin);
@@ -96,7 +96,7 @@ export const Screen06WaitPin: React.FC<Screen06WaitPinProps> = ({
             Nhập mã chuyển trạm từ Thầy/Cô
           </h2>
           <p className="text-xs text-slate-300 max-w-md mt-1.5 leading-relaxed">
-            Chúc mừng em đã hoàn thành Trạm {currentStation}! Hãy lắng nghe phần chốt kiến thức từ giáo viên để nhận mã 6 chữ số mở <strong>Trạm {currentStation + 1}</strong>.
+            Em đã tới trạm {currentStation + 1}. Nhập mã 4 số của thầy cô để vào thử thách.
           </p>
         </div>
 
@@ -111,7 +111,7 @@ export const Screen06WaitPin: React.FC<Screen06WaitPinProps> = ({
                 }}
                 type="text"
                 inputMode="numeric"
-                maxLength={6}
+                maxLength={4}
                 value={digit}
                 onChange={(e) => handleDigitChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
@@ -131,14 +131,14 @@ export const Screen06WaitPin: React.FC<Screen06WaitPinProps> = ({
 
           <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] text-slate-400 flex items-center justify-center gap-2">
             <ShieldAlert className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <span>Mỗi lần chuyển trạm sử dụng một mã 6 chữ số riêng biệt do Thầy/Cô điều tiết.</span>
+            <span>Mỗi lần chuyển trạm dùng một mã 4 số riêng.</span>
           </div>
 
           <button
             type="submit"
-            disabled={isSubmitting || pinDigits.join('').length !== 6}
+            disabled={isSubmitting || pinDigits.join('').length !== 4}
             className={`w-full py-4 px-6 rounded-2xl font-black text-sm tracking-wide flex items-center justify-center gap-2.5 shadow-xl transition active:scale-[0.98] ${
-              isSubmitting || pinDigits.join('').length !== 6
+              isSubmitting || pinDigits.join('').length !== 4
                 ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
                 : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-cyan-500/30'
             }`}

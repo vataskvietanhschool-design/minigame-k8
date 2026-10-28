@@ -58,11 +58,11 @@ test('TC09 & TC10: Answer evaluation increments attempts and hints properly', as
   assert.equal(resCorrect.phase, 'EXPLANATION');
 });
 
-test('TC16: 6-digit PIN with leading zero matches correctly', () => {
-  const expectedPin = '004216';
-  const inputPin = '004216';
+test('TC16: 4-digit PIN with leading zero matches correctly', () => {
+  const expectedPin = '0042';
+  const inputPin = '0042';
   assert.equal(inputPin === expectedPin, true);
-  assert.equal(inputPin.length, 6);
+  assert.equal(inputPin.length, 4);
 });
 
 test('TC20: Event idempotency prevents double recording for same eventId', async () => {

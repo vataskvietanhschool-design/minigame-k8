@@ -43,6 +43,14 @@ export function saveStoredPlay(info: StoredPlayInfo): void {
   }
 }
 
+export function clearDeviceId(): void {
+  try {
+    localStorage.removeItem(DEVICE_ID_KEY);
+  } catch (err) {
+    console.warn('Cannot clear device id:', err);
+  }
+}
+
 export function clearStoredPlay(): void {
   try {
     localStorage.removeItem(CURRENT_PLAY_KEY);

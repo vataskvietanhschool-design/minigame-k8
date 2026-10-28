@@ -32,6 +32,12 @@ function toIso(value: unknown): string | null {
   return String(value);
 }
 
+/** Maze builds stored EXPLORE before the station flow. Those plays still need to answer. */
+export function reopenLegacyExplore(play: PlayData): PlayData {
+  if ((play.phase as string) !== 'EXPLORE') return play;
+  return { ...play, phase: 'QUESTION', updatedAt: nowIso() };
+}
+
 function normalizeDates<T extends object>(data: T): T {
   const out = { ...data } as Record<string, unknown>;
   for (const key of ['createdAt', 'updatedAt', 'startedAt', 'completedAt']) {
@@ -100,10 +106,10 @@ function loadLocalStore(): LocalStoreData {
     classCode: '8C1',
     title: 'Tiết 14: Cấu trúc điều khiển trong Scratch (Mẫu)',
     status: 'ACTIVE',
-    pin12: '102938',
-    pin23: '482019',
-    pin34: '739104',
-    pin45: '004216',
+    pin12: '1209',
+    pin23: '4820',
+    pin34: '7391',
+    pin45: '0042',
     createdAt: now,
     updatedAt: now
   };
@@ -242,6 +248,34 @@ export async function updateSession(
   return snap.exists ? normalizeDates(snap.data() as SessionData) : null;
 }
 
+export async function deleteSession(sessionId: string): Promise<boolean> {
+  if (isLocalMode()) {
+    const store = loadLocalStore();
+    if (!store.sessions[sessionId]) return false;
+    delete store.sessions[sessionId];
+    for (const [id, play] of Object.entries(store.plays)) {
+      if (play.sessionId === sessionId) delete store.plays[id];
+    }
+    for (const [id, event] of Object.entries(store.events)) {
+      if (event.sessionId === sessionId) delete store.events[id];
+    }
+    saveLocalStore(store);
+    return true;
+  }
+
+  const db = getDb();
+  const sessionRef = db.collection('sessions').doc(sessionId);
+  const session = await sessionRef.get();
+  if (!session.exists) return false;
+
+  const plays = await db.collection('plays').where('sessionId', '==', sessionId).get();
+  for (const doc of plays.docs) {
+    await db.recursiveDelete(doc.ref);
+  }
+  await sessionRef.delete();
+  return true;
+}
+
 // ------------------- PLAYS REPO (TRANSACTIONAL) -------------------
 export async function getPlayById(playId: string): Promise<PlayData | null> {
   if (isLocalMode()) {
@@ -263,7 +297,10 @@ export async function createOrGetPlay(
   if (isLocalMode()) {
     const store = loadLocalStore();
     if (store.plays[playId]) {
-      return { play: store.plays[playId], isNew: false };
+      const play = reopenLegacyExplore(store.plays[playId]);
+      store.plays[playId] = play;
+      saveLocalStore(store);
+      return { play, isNew: false };
     }
     const initialPlay = buildInitialPlay(playId, sessionId, deviceId, classCode, fullName);
     store.plays[playId] = initialPlay;
@@ -277,7 +314,11 @@ export async function createOrGetPlay(
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(playRef);
     if (snap.exists) {
-      return { play: normalizeDates(snap.data() as PlayData), isNew: false };
+      const existing = reopenLegacyExplore(normalizeDates(snap.data() as PlayData));
+      if ((snap.data() as PlayData).phase !== existing.phase) {
+        tx.set(playRef, existing, { merge: true });
+      }
+      return { play: existing, isNew: false };
     }
     const initialPlay = buildInitialPlay(playId, sessionId, deviceId, classCode, fullName);
     tx.set(playRef, initialPlay);
