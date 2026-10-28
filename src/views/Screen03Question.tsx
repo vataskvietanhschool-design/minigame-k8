@@ -13,9 +13,58 @@ interface Screen03QuestionProps {
 }
 
 const STATION_PROMPT: Partial<Record<StationId, string>> = {
-  1: 'Robot cần mức pin đúng thì mới bật được nguồn. Hãy tìm mức đó.',
-  2: 'Một thẻ làm cửa mở. Hãy tìm thẻ đó.',
-  3: 'Hãy tìm mã làm đèn đổi màu.'
+  1: 'Bấm các icon pin đang rơi. Thu đủ 100% năng lượng để bật robot.',
+  2: 'Bấm các icon pin đang rơi. Trúng +5%, bỏ lỡ −5%. Thu đủ 100% năng lượng để bật robot.',
+  3: 'Bấm robot đủ 120 lần trong 30 giây để kích hoạt.'
+};
+
+const ENERGY_QUIZZES: Partial<Record<StationId, { prompt: string; options: string[]; correct: number }[]>> = {
+  1: [
+    {
+      prompt: 'Robot cần bao nhiêu năng lượng để kích hoạt?',
+      options: ['> 50%', '>= 60%', '= 100%'],
+      correct: 2
+    },
+    {
+      prompt: 'Nếu bạn bấm không đúng viên pin thì có hiện tượng gì xảy ra không?',
+      options: ['Có', 'Không'],
+      correct: 1
+    },
+    {
+      prompt: 'Năng lượng chỉ tăng lên khi bấm trúng viên pin, vậy câu lệnh điều kiện nên sử dụng ở đây là gì?',
+      options: ['if then', 'if then else'],
+      correct: 0
+    }
+  ],
+  2: [
+    {
+      prompt: 'Khi bạn bỏ lỡ viên pin thì có điều gì xảy ra không?',
+      options: ['Không có gì xảy ra', 'Có, bị trừ -5/Viên Pin'],
+      correct: 1
+    },
+    {
+      prompt: 'Nếu bạn bấm trúng viên pin thì +5 năng lượng, nếu để Pin chạm cạnh dưới thì bạn -5 điểm. Với điều kiện này nên sử dụng câu lệnh điều kiện nào?',
+      options: ['if then', 'if then else', '2 câu if then'],
+      correct: 2
+    }
+  ],
+  3: [
+    {
+      prompt: 'Em cần Click đủ 120 lần trong bao lâu?',
+      options: ['30', '60', '90'],
+      correct: 0
+    },
+    {
+      prompt: 'Nếu hết thời gian mà không click đủ 120 lần thì điều gì xảy ra?',
+      options: ['Kích hoạt thành công', 'Kích hoạt thất bại', 'Không có gì xảy ra'],
+      correct: 1
+    },
+    {
+      prompt: 'Nếu click đủ 120 lần trong 30s thì thành công, nếu không thì thông báo thất bại. Với điều kiện này nên áp dụng trong trường hợp này là gì?',
+      options: ['If then', 'If then else', 'nhiều câu lệnh if then'],
+      correct: 1
+    }
+  ]
 };
 
 function isImageOption(value: string): boolean {
@@ -31,14 +80,34 @@ export const Screen03Question: React.FC<Screen03QuestionProps> = ({
   onSelectOption
 }) => {
   const imageQuestion = isImageOption(question.optionA);
+  const energyQuizItems = ENERGY_QUIZZES[stationNo];
+  const energyQuiz = Boolean(energyQuizItems);
   const alreadyTried = wrongCount > 0;
   const [solved, setSolved] = useState(alreadyTried);
-  const [modalOpen, setModalOpen] = useState(alreadyTried);
+  const [modalOpen, setModalOpen] = useState(alreadyTried && !energyQuiz);
   const [selectedOpt, setSelectedOpt] = useState<'A' | 'B' | null>(null);
+  const [quizIndex, setQuizIndex] = useState(0);
+  const [quizWrong, setQuizWrong] = useState(false);
 
   const handleSolved = () => {
     setSolved(true);
-    setModalOpen(true);
+    if (!energyQuiz) setModalOpen(true);
+  };
+
+  const answerQuiz = (index: number) => {
+    if (isSubmitting) return;
+    const current = energyQuizItems?.[quizIndex];
+    if (!current) return;
+    if (index !== current.correct) {
+      setQuizWrong(true);
+      return;
+    }
+    setQuizWrong(false);
+    if (quizIndex < (energyQuizItems?.length ?? 1) - 1) {
+      setQuizIndex(quizIndex + 1);
+      return;
+    }
+    onSelectOption(stationNo === 3 ? 'B' : 'A');
   };
 
   const handleChoose = (opt: 'A' | 'B') => {
@@ -113,7 +182,33 @@ export const Screen03Question: React.FC<Screen03QuestionProps> = ({
 
       <InteractiveStationMinigame stationNo={stationNo} onSolved={handleSolved} />
 
-      {solved && !modalOpen && (
+      {energyQuiz && solved && (
+        <div className="rounded-3xl border border-slate-700 bg-slate-900 p-5 shadow-xl space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-sm sm:text-base font-black text-white leading-snug">
+              Câu {quizIndex + 1}. {energyQuizItems?.[quizIndex].prompt}
+            </h3>
+            <span className="shrink-0 text-[11px] font-mono text-cyan-300">{quizIndex + 1}/{energyQuizItems?.length}</span>
+          </div>
+          <div className="grid grid-cols-1 gap-2">
+            {energyQuizItems?.[quizIndex].options.map((label, index) => (
+              <button
+                key={label}
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => answerQuiz(index)}
+                className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-left text-sm font-semibold text-slate-100 hover:border-cyan-500"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {quizWrong && <p className="text-sm font-medium text-amber-200">Chưa đúng. Hãy chọn lại câu này.</p>}
+          {isSubmitting && <p className="text-center text-xs text-cyan-400 font-mono">Đang xác thực câu trả lời...</p>}
+        </div>
+      )}
+
+      {solved && !modalOpen && !energyQuiz && (
         <div className="flex justify-center">
           <button
             type="button"

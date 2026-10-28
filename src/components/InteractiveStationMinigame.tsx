@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { StationId } from '../../shared/types';
 import { 
-  Power, 
   CreditCard, 
   CheckCircle2, 
   AlertTriangle, 
@@ -11,13 +10,14 @@ import {
   Cpu, 
   Flame, 
   Snowflake,
-  Zap,
   MousePointer,
   Droplets,
   Thermometer,
   Waves
 } from 'lucide-react';
 import { sounds } from '../utils/sound';
+import { Station1EnergyCatch } from './Station1EnergyCatch';
+import { Station3RobotCharge } from './Station3RobotCharge';
 
 interface InteractiveStationMinigameProps {
   stationNo: StationId;
@@ -1278,74 +1278,6 @@ const Station5ComponentBoxMinigame: React.FC<{ onSolved?: () => void }> = ({ onS
 // Main Interactive Minigames Router
 // ---------------------------------------------------------------------------
 export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProps> = ({ stationNo, onSolved }) => {
-  // Station 1: Battery level & Industrial Power Switch
-  const [batteryPercent, setBatteryPercent] = useState<number>(40);
-  const [isPowerSwitchedOn, setIsPowerSwitchedOn] = useState<boolean>(false);
-  const [powerResultState, setPowerResultState] = useState<'IDLE' | 'POWERED_ON' | 'FAILED'>('IDLE');
-
-  // Station 3: Laser keypad & Hallway barrier
-  const [enteredPin, setEnteredPin] = useState<string>('');
-  const [laserState, setLaserState] = useState<'ACTIVE' | 'OFF' | 'ALARM'>('ACTIVE');
-
-  // Reset states when station changes
-  useEffect(() => {
-    setIsPowerSwitchedOn(false);
-    setPowerResultState('IDLE');
-    setEnteredPin('');
-    setLaserState('ACTIVE');
-  }, [stationNo]);
-
-  // Station 1: Power Switch Action
-  const handleTogglePowerSwitch = () => {
-    const nextState = !isPowerSwitchedOn;
-    setIsPowerSwitchedOn(nextState);
-    sounds.playSwitch(nextState);
-
-    if (nextState) {
-      if (batteryPercent >= 50) {
-        sounds.playPowerUp();
-        setPowerResultState('POWERED_ON');
-        onSolved?.();
-      } else {
-        sounds.playBeep(false);
-        setPowerResultState('FAILED');
-      }
-    } else {
-      setPowerResultState('IDLE');
-    }
-  };
-
-  // Station 3: Keypad Typing Action
-  const handleKeypadPress = (char: string) => {
-    sounds.playTick();
-    if (char === 'CLR') {
-      setEnteredPin('');
-      setLaserState('ACTIVE');
-      return;
-    }
-    if (char === 'ENTER') {
-      if (!enteredPin || enteredPin.length === 0) return;
-      if (enteredPin === '999') {
-        sounds.playBeep(true);
-        sounds.playPowerUp();
-        setLaserState('OFF');
-        onSolved?.();
-      } else {
-        sounds.playBeep(false);
-        setLaserState('ALARM');
-      }
-      return;
-    }
-    if (enteredPin.length < 3) {
-      if (laserState !== 'ACTIVE') {
-        setLaserState('ACTIVE');
-        setEnteredPin(char);
-      } else {
-        setEnteredPin((prev) => prev + char);
-      }
-    }
-  };
-
   return (
     <div className="w-full bg-slate-900 border-2 border-cyan-500/50 rounded-2xl p-4 sm:p-5 shadow-2xl space-y-4">
       {/* Header */}
@@ -1354,212 +1286,23 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
       {/* ================================================================ */}
       {/* TRẠM 1: NÚM VẶN PIN XOAY TRÒN & CÔNG TẮC BẬT NGUỒN VẬT LÝ         */}
       {/* ================================================================ */}
-      {stationNo === 1 && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
-            {/* Left: Tactile Rotary Dial Knob */}
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col items-center shadow-inner">
-              <RotaryKnob
-                value={batteryPercent}
-                min={0}
-                max={100}
-                step={5}
-                unit="%"
-                label="Xoay mức pin"
-                onChange={(val) => {
-                  setBatteryPercent(val);
-                  setIsPowerSwitchedOn(false);
-                  setPowerResultState('IDLE');
-                }}
-              />
-            </div>
-
-            {/* Right: Heavy Industrial Power Switch & Reactor Reaction */}
-            <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 flex flex-col items-center justify-center space-y-4 shadow-inner">
-              <div className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                <Power className="w-4 h-4 text-cyan-400" />
-                <span>Gạt nguồn</span>
-              </div>
-
-              {/* Physical Flip Toggle Switch */}
-              <button
-                type="button"
-                onClick={handleTogglePowerSwitch}
-                className={`relative w-24 h-12 rounded-full p-1.5 transition-all duration-300 cursor-pointer shadow-lg active:scale-95 border-2 ${
-                  isPowerSwitchedOn
-                    ? 'bg-emerald-600 border-emerald-400 shadow-emerald-500/40'
-                    : 'bg-slate-800 border-slate-600 shadow-black'
-                }`}
-                title="Nhấn để gạt công tắc nguồn"
-              >
-                <div
-                  className={`w-9 h-9 rounded-full bg-slate-100 shadow-md flex items-center justify-center transition-transform duration-300 ${
-                    isPowerSwitchedOn ? 'translate-x-12 bg-white' : 'translate-x-0'
-                  }`}
-                >
-                  <Power
-                    className={`w-5 h-5 transition-colors ${
-                      isPowerSwitchedOn ? 'text-emerald-600' : 'text-slate-600'
-                    }`}
-                  />
-                </div>
-              </button>
-
-              <span className="text-[11px] font-mono text-slate-400">
-                Trạng thái công tắc: <strong>{isPowerSwitchedOn ? 'ĐANG BẬT' : 'ĐANG TẮT'}</strong>
-              </span>
-
-              {/* Reactor Core Visual Feedback */}
-              <div
-                className={`w-full p-4 rounded-xl border flex flex-col items-center text-center transition-all duration-500 ${
-                  powerResultState === 'POWERED_ON'
-                    ? 'bg-emerald-950/80 border-emerald-500 shadow-lg shadow-emerald-500/30'
-                    : powerResultState === 'FAILED'
-                    ? 'bg-rose-950/80 border-rose-500 shadow-lg shadow-rose-500/30'
-                    : 'bg-slate-900 border-slate-800'
-                }`}
-              >
-                {powerResultState === 'POWERED_ON' && (
-                  <>
-                    <Zap className="w-8 h-8 text-emerald-400 animate-bounce mb-1" />
-                    <span className="text-xs font-black text-emerald-300 uppercase tracking-wider">
-                      Robot đã bật
-                    </span>
-                  </>
-                )}
-
-                {powerResultState === 'FAILED' && (
-                  <>
-                    <AlertTriangle className="w-8 h-8 text-rose-400 animate-pulse mb-1" />
-                    <span className="text-xs font-black text-rose-300 uppercase tracking-wider">
-                      Chưa bật
-                    </span>
-                  </>
-                )}
-
-                {powerResultState === 'IDLE' && (
-                  <span className="text-xs text-slate-500 italic py-2">Gạt nguồn để thử.</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {stationNo === 1 && <Station1EnergyCatch onSolved={onSolved} />}
 
       {/* ================================================================ */}
       {/* TRẠM 2: MINIGAME KÉO THẢ THẺ TỪ VÀO KHE CỬA (KHÔNG KÝ HIỆU TRÊN CỬA) */}
       {/* ================================================================ */}
-      {stationNo === 2 && <Station2DragCardMinigame onSolved={onSolved} />}
+      {stationNo === 2 && (
+        <Station1EnergyCatch
+          onSolved={onSolved}
+          penalizeMiss
+          hint="Bấm icon pin đang rơi. Trúng +5%, bỏ lỡ −5%. Cần đủ 100% để bật robot."
+        />
+      )}
 
       {/* ================================================================ */}
       {/* TRẠM 3: BÀN PHÍM CƠ & HÀNG RÀO LASER BẢO VỆ                     */}
       {/* ================================================================ */}
-      {stationNo === 3 && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
-            {/* Left Screen: Keypad and entered digits ONLY (No right/wrong answers shown!) */}
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 shadow-inner flex flex-col justify-between">
-              <div className="flex justify-between items-center text-xs">
-                <span className="font-bold text-slate-300">BÀN PHÍM BẢO MẬT:</span>
-                <span className="font-mono text-slate-400 text-[11px]">(3 chữ số)</span>
-              </div>
-
-              {/* LCD Display */}
-              <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl font-mono text-center tracking-widest text-2xl font-black text-cyan-300 shadow-inner">
-                {enteredPin.padEnd(3, '_')}
-              </div>
-
-              {/* 3x4 Mechanical Keypad */}
-              <div className="grid grid-cols-3 gap-2">
-                {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'CLR', '0', 'ENTER'].map((k) => (
-                  <button
-                    key={k}
-                    type="button"
-                    onClick={() => handleKeypadPress(k)}
-                    className={`p-3 rounded-lg text-sm font-mono font-black transition active:scale-95 shadow cursor-pointer ${
-                      k === 'ENTER'
-                        ? 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/40 shadow-md'
-                        : k === 'CLR'
-                        ? 'bg-rose-900/80 hover:bg-rose-800 text-rose-200'
-                        : 'bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700'
-                    }`}
-                  >
-                    {k}
-                  </button>
-                ))}
-              </div>
-
-              <div className="text-[11px] text-slate-500 text-center font-mono">
-                Bấm số rồi nhấn <strong className="text-cyan-400">ENTER</strong> để kích hoạt
-              </div>
-            </div>
-
-            {/* Right Screen: Clue and empty frame until user submits code */}
-            <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 flex flex-col justify-between shadow-inner space-y-3 min-h-[260px]">
-              <p className="text-sm font-medium text-amber-100 leading-snug">
-                Gợi ý: Dãy số gồm 3 chữ số giống nhau.
-              </p>
-
-              {/* Central Frame: Empty Standby Frame OR Result Light (Shown only AFTER user presses Enter) */}
-              <div className="flex-1 flex flex-col items-center justify-center">
-                {laserState === 'ACTIVE' && (
-                  <div className="w-full py-8 border-2 border-dashed border-slate-800 rounded-xl flex flex-col items-center justify-center text-slate-500 space-y-2 bg-slate-900/40 shadow-inner">
-                    <div className="w-12 h-12 rounded-full border border-slate-800 bg-slate-950 flex items-center justify-center text-slate-600 text-base font-mono">
-                      _ _ _
-                    </div>
-                    <span className="text-xs font-mono text-slate-400">
-                      Khung hiển thị kết quả đèn tín hiệu
-                    </span>
-                    <span className="text-[11px] text-slate-600 font-mono">
-                      (Đang chờ nhập mã và nhấn ENTER...)
-                    </span>
-                  </div>
-                )}
-
-                {/* If Code is correct (999) -> THEN branch with Green Light */}
-                {laserState === 'OFF' && (
-                  <div className="w-full p-4 rounded-xl border-2 border-emerald-500 bg-emerald-950/70 flex flex-col items-center justify-center space-y-2 shadow-2xl shadow-emerald-950 animate-in fade-in zoom-in-95">
-                    <div className="w-16 h-16 rounded-full bg-emerald-500 border-2 border-emerald-300 text-slate-950 flex items-center justify-center shadow-xl shadow-emerald-500/80 scale-105">
-                      <CheckCircle2 className="w-9 h-9" />
-                    </div>
-                    <span className="text-xs font-black text-emerald-300 uppercase tracking-wider">
-                      Đèn xanh
-                    </span>
-                  </div>
-                )}
-
-                {/* If Code is wrong -> ELSE branch with Red Light */}
-                {laserState === 'ALARM' && (
-                  <div className="w-full p-4 rounded-xl border-2 border-rose-500 bg-rose-950/70 flex flex-col items-center justify-center space-y-2 shadow-2xl shadow-rose-950 animate-in fade-in zoom-in-95">
-                    <div className="w-16 h-16 rounded-full bg-rose-500 border-2 border-rose-300 text-white flex items-center justify-center shadow-xl shadow-rose-500/80 scale-105 animate-pulse">
-                      <AlertTriangle className="w-9 h-9" />
-                    </div>
-                    <span className="text-xs font-black text-rose-300 uppercase tracking-wider">
-                      Đèn đỏ
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Bottom helper when result is shown */}
-              {laserState !== 'ACTIVE' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    sounds.playTick();
-                    setEnteredPin('');
-                    setLaserState('ACTIVE');
-                  }}
-                  className="w-full py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-mono font-bold border border-slate-700 transition"
-                >
-                  🔄 Nhập thử mã khác
-                </button>
-              )}
-            </div>
-          </div>
-
-        </div>
-      )}
+      {stationNo === 3 && <Station3RobotCharge onSolved={onSolved} />}
 
       {/* ================================================================ */}
       {/* TRẠM 4: MINIGAME LÒ LỬA THIÊU HỦY & KÉO XÔ NƯỚC LÀM MÁT          */}

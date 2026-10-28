@@ -9,72 +9,73 @@ export const QUESTIONS_DB: Record<StationId, QuestionData> = {
     stationNo: 1,
     title: 'Trạm 1 – Khởi động robot',
     scenario:
-      'Robot chỉ được bật nguồn khi pin còn từ 50% trở lên. Nếu pin dưới 50%, robot không thực hiện hành động nào.',
-    question: 'Nên sử dụng cấu trúc điều khiển nào trong Scratch?',
+      'Năng lượng chỉ tăng khi bấm trúng viên pin. Bấm không trúng thì không có việc gì xảy ra.',
+    question: 'Năng lượng chỉ tăng lên khi bấm trúng viên pin. Câu lệnh điều kiện nên dùng là gì?',
     optionA: 'if then',
     optionB: 'if then else',
     correctOption: 'A',
     hints: [
-      'Khi pin dưới 50%, robot có phải thực hiện một hành động khác không?',
-      'Nếu điều kiện sai và không cần làm thêm gì, em có cần nhánh else không?',
-      'Hãy thử so sánh pin 60% và 40%: chương trình chỉ có một lệnh bật nguồn khi đủ pin.'
+      'Bấm không trúng viên pin thì có việc gì xảy ra không?',
+      'Nếu chỉ có việc làm khi bấm trúng, có cần nhánh else không?',
+      'Bấm trúng thì năng lượng tăng. Bấm trượt thì không làm gì, nên dùng if then.'
     ],
     explanation: {
       correctChoice: 'A. if then',
       reason:
-        'Cấu trúc if then phù hợp vì chỉ thực hiện lệnh bật nguồn khi điều kiện pin ≥ 50% đúng. Khi pin dưới 50%, khối lệnh sẽ bỏ qua; không có hành động nào khác cần xử lý.',
+        'Năng lượng chỉ tăng khi bấm trúng viên pin. Bấm không đúng viên pin thì không có hiện tượng gì, nên không cần nhánh else.',
       branchesAnalysis:
-        'Đúng 50% vẫn đủ điều kiện bật nguồn. Mô phỏng: Pin 60% (ĐÚNG) → Bật nguồn; Pin 40% (SAI) → Không làm gì (bỏ qua).',
+        'Bấm trúng viên pin: năng lượng tăng 5%. Bấm không trúng: không có việc gì xảy ra.',
       takeaway:
-        'Khi bài toán chỉ yêu cầu thực hiện hành động khi điều kiện ĐÚNG, và không có hành động nào khi SAI, ta chọn cấu trúc if then (khuyết nhánh else).'
+        'Khi chỉ có việc cần làm nếu điều kiện đúng, và không có việc gì nếu điều kiện sai, dùng if then.'
     }
   },
   2: {
     stationNo: 2,
-    title: 'Trạm 2 – Mở cửa phòng thí nghiệm',
+    title: 'Trạm 2 – Năng lượng hai nhánh',
     scenario:
-      'Nếu thẻ từ hợp lệ, cửa sẽ mở. Nếu thẻ không hợp lệ, cửa vẫn đóng và không có hành động nào khác.',
-    question: 'Vì sao nên sử dụng cấu trúc if then?',
-    optionA: 'Vì chỉ cần thực hiện hành động khi điều kiện đúng.',
-    optionB: 'Vì cần thực hiện hai hành động khác nhau khi điều kiện đúng và sai.',
+      'Bấm trúng viên pin thì năng lượng tăng 5%. Pin chạm cạnh dưới thì năng lượng giảm 5%. Đó là hai điều kiện riêng.',
+    question:
+      'Bấm trúng thì +5%, pin chạm cạnh dưới thì −5%. Câu lệnh điều kiện nên dùng là gì?',
+    optionA: '2 câu if then',
+    optionB: 'if then else',
     correctOption: 'A',
     hints: [
-      'Đề bài có yêu cầu robot bật báo động hoặc thực hiện hành động mới khi thẻ sai không?',
-      'Khi thẻ không hợp lệ, cửa đang đóng có phải đổi trạng thái không?',
-      'Chỉ có hành động mở cửa khi thẻ hợp lệ; trường hợp sai không chạy lệnh mở.'
+      'Bấm trúng và pin chạm cạnh dưới có phải cùng một điều kiện không?',
+      'Mỗi việc xảy ra với một điều kiện riêng thì có cần ghép thành if then else không?',
+      'Một câu if then cho lúc bấm trúng, một câu if then cho lúc pin chạm cạnh dưới.'
     ],
     explanation: {
-      correctChoice: 'A. Vì chỉ cần thực hiện hành động khi điều kiện đúng.',
+      correctChoice: 'A. 2 câu if then',
       reason:
-        'Điều kiện “thẻ hợp lệ” đúng thì thực hiện lệnh mở cửa. Nếu sai thì không thực hiện lệnh mở, cửa vốn đang ở trạng thái đóng nên tiếp tục đóng; không cần một hành động mới.',
+        'Bấm trúng viên pin và pin chạm cạnh dưới là hai điều kiện khác nhau. Mỗi điều kiện một việc, nên dùng hai câu if then.',
       branchesAnalysis:
-        'Điểm phân biệt bản chất: Không thực hiện lệnh khi sai hoàn toàn khác với việc phải chạy một nhánh hành động khác (else).',
+        'If bấm trúng then +5%. If pin chạm cạnh dưới then −5%.',
       takeaway:
-        'Cửa vốn dĩ đang đóng. Nếu sai điều kiện mà không cần hành động phát sinh nào khác, không dùng nhánh else.'
+        'Khi có hai điều kiện riêng, mỗi điều kiện một việc, dùng hai câu if then.'
     }
   },
   3: {
     stationNo: 3,
-    title: 'Trạm 3 – Vượt tường laser',
+    title: 'Trạm 3 – Kích hoạt robot',
     scenario:
-      'Robot kiểm tra mã bảo mật. Nếu mã đúng, đèn chuyển xanh. Nếu mã sai, đèn chuyển đỏ.',
-    question: 'Cấu trúc nào phù hợp nhất để xử lý cả hai trường hợp?',
+      'Click đủ 120 lần trong 30 giây thì robot kích hoạt thành công. Hết giờ mà chưa đủ thì kích hoạt thất bại.',
+    question: 'Đủ 120 lần trong 30 giây thì thành công, không đủ thì thất bại. Câu lệnh nào phù hợp?',
     optionA: 'if then',
     optionB: 'if then else',
     correctOption: 'B',
     hints: [
-      'Đề bài có cần bật một màu đèn khi mã sai không?',
-      'Nếu có cả hành động khi điều kiện đúng và hành động khi điều kiện sai, em cần mấy nhánh?',
-      'Nhánh then: đèn xanh; nhánh else: đèn đỏ.'
+      'Hết 30 giây mà chưa đủ 120 lần thì có thông báo gì không?',
+      'Một điều kiện có hai kết quả khác nhau thì cần mấy nhánh?',
+      'Đủ 120 lần trong 30 giây thì thành công, không đủ thì thất bại, nên dùng if then else.'
     ],
     explanation: {
       correctChoice: 'B. if then else',
       reason:
-        'Cấu trúc if then else phù hợp nhất vì có hai hành động hoàn toàn khác nhau được quy định rõ: mã đúng → đèn chuyển xanh; mã sai → đèn chuyển đỏ.',
+        'Click đủ 120 lần trong 30 giây thì kích hoạt thành công. Hết giờ mà chưa đủ thì thông báo kích hoạt thất bại. Cùng một điều kiện có hai kết quả, nên dùng if then else.',
       branchesAnalysis:
-        'Cả hai nhánh ĐÚNG (then) và SAI (else) đều có lệnh thực thi riêng biệt, không có trường hợp nào bị bỏ qua.',
+        'Đủ 120 lần trong 30 giây: thành công. Không đủ: kích hoạt thất bại.',
       takeaway:
-        'Khi bài toán phân rõ hai kịch bản hành động khác nhau tương ứng với điều kiện ĐÚNG và SAI, ta bắt buộc sử dụng if then else (rẽ nhánh đầy đủ).'
+        'Khi một điều kiện có việc làm nếu đúng và việc làm khác nếu sai, dùng if then else.'
     }
   },
   4: {

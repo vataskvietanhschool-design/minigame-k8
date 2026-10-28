@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 
 const STOPS = [
   { no: 1, x: 16, y: 90, title: 'Khởi động' },
-  { no: 2, x: 84, y: 70, title: 'Mở cửa' },
-  { no: 3, x: 16, y: 48, title: 'Laser' },
+  { no: 2, x: 84, y: 70, title: 'Hai nhánh' },
+  { no: 3, x: 16, y: 48, title: 'Kích hoạt' },
   { no: 4, x: 84, y: 26, title: 'Ước số' },
   { no: 5, x: 22, y: 8, title: 'Chẵn lẻ' }
 ] as const;
