@@ -15,11 +15,12 @@ export const Station3RobotCharge: React.FC<Station3RobotChargeProps> = ({ onSolv
   const [done, setDone] = useState(false);
   const [round, setRound] = useState(0);
   const [pulse, setPulse] = useState(0);
+  const [started, setStarted] = useState(false);
   const clicksRef = useRef(0);
   const solvedRef = useRef(false);
 
   useEffect(() => {
-    if (failed || done) return;
+    if (!started || failed || done) return;
     const endsAt = performance.now() + LIMIT_SECONDS * 1000;
     const timer = window.setInterval(() => {
       const remain = Math.max(0, (endsAt - performance.now()) / 1000);
@@ -27,10 +28,10 @@ export const Station3RobotCharge: React.FC<Station3RobotChargeProps> = ({ onSolv
       if (remain <= 0 && !solvedRef.current) setFailed(true);
     }, 100);
     return () => window.clearInterval(timer);
-  }, [failed, done, round]);
+  }, [started, failed, done, round]);
 
   const tap = () => {
-    if (failed || solvedRef.current) return;
+    if (!started || failed || solvedRef.current) return;
     const next = Math.min(GOAL, clicksRef.current + 1);
     clicksRef.current = next;
     setClicks(next);
@@ -51,6 +52,7 @@ export const Station3RobotCharge: React.FC<Station3RobotChargeProps> = ({ onSolv
     setSecondsLeft(LIMIT_SECONDS);
     setFailed(false);
     setPulse(0);
+    setStarted(false);
     setRound((value) => value + 1);
   };
 
@@ -67,7 +69,7 @@ export const Station3RobotCharge: React.FC<Station3RobotChargeProps> = ({ onSolv
         <button
           type="button"
           onClick={tap}
-          disabled={failed || done}
+          disabled={!started || failed || done}
           aria-label="Bấm để kích hoạt robot"
           className="relative h-72 w-44 select-none disabled:cursor-default"
         >
@@ -97,6 +99,21 @@ export const Station3RobotCharge: React.FC<Station3RobotChargeProps> = ({ onSolv
           )}
         </button>
         <style>{`@keyframes robot-tap { 0% { opacity: 0.9; } 100% { opacity: 0; transform: translateX(-50%) scale(1.08); } }`}</style>
+        {!started && !failed && !done && (
+          <div className="absolute inset-0 z-10 grid place-items-center rounded-3xl bg-slate-950/85 p-4 text-center">
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-cyan-100">Bấm robot đủ 120 lần trong 30 giây để kích hoạt.</p>
+              <p className="text-xs text-slate-300">Đọc hướng dẫn, rồi bấm Bắt đầu. Đồng hồ chỉ chạy sau đó.</p>
+              <button
+                type="button"
+                onClick={() => setStarted(true)}
+                className="rounded-full bg-cyan-500 px-5 py-2 text-sm font-black text-slate-950"
+              >
+                Bắt đầu
+              </button>
+            </div>
+          </div>
+        )}
         {failed && (
           <div className="absolute inset-0 z-10 grid place-items-center rounded-3xl bg-slate-950/80 p-4 text-center">
             <div className="space-y-3">

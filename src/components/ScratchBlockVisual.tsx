@@ -13,7 +13,7 @@ export const ScratchBlockVisual: React.FC<ScratchBlockVisualProps> = ({ stationN
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-slate-400 text-xs">
         <span className="flex items-center gap-1.5 font-sans font-semibold text-amber-400">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />
-          Mô hình khối lệnh Scratch (Bài 14)
+          Môn Tin học
         </span>
         <span className="text-[11px] text-slate-400">Điều khiển rẽ nhánh</span>
       </div>

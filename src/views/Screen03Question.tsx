@@ -15,10 +15,12 @@ interface Screen03QuestionProps {
 const STATION_PROMPT: Partial<Record<StationId, string>> = {
   1: 'Bấm các icon pin đang rơi. Thu đủ 100% năng lượng để bật robot.',
   2: 'Bấm các icon pin đang rơi. Trúng +5%, bỏ lỡ −5%. Thu đủ 100% năng lượng để bật robot.',
-  3: 'Bấm robot đủ 120 lần trong 30 giây để kích hoạt.'
+  3: 'Bấm robot đủ 120 lần trong 30 giây để kích hoạt.',
+  4: 'Khi nhập mật khẩu hệ thống không báo mật khẩu đúng hay sai nếu nhập quá nhiều lần thì máy tự khóa. Nên cần viết chương trình để thông báo khi nhập mật khẩu và khi sai mật khẩu',
+  5: 'Robot đang quá nóng nên không hoạt động bình thường. Hãy chọn chương trình giúp hạ nhiệt. Chỉ chương trình đúng mới làm nhiệt độ giảm. Gợi ý: chương trình phải cho biết khi đang hoạt động bình thường.'
 };
 
-const ENERGY_QUIZZES: Partial<Record<StationId, { prompt: string; options: string[]; correct: number }[]>> = {
+const ENERGY_QUIZZES: Partial<Record<StationId, { prompt: string; options: string[]; correct: number; typed?: string }[]>> = {
   1: [
     {
       prompt: 'Robot cần bao nhiêu năng lượng để kích hoạt?',
@@ -31,7 +33,7 @@ const ENERGY_QUIZZES: Partial<Record<StationId, { prompt: string; options: strin
       correct: 1
     },
     {
-      prompt: 'Năng lượng chỉ tăng lên khi bấm trúng viên pin, vậy câu lệnh điều kiện nên sử dụng ở đây là gì?',
+      prompt: 'Năng lượng chỉ tăng lên khi bấm trúng viên pin, vậy câu lệnh rẽ nhánh nên sử dụng ở đây là gì?',
       options: ['if then', 'if then else'],
       correct: 0
     }
@@ -43,7 +45,7 @@ const ENERGY_QUIZZES: Partial<Record<StationId, { prompt: string; options: strin
       correct: 1
     },
     {
-      prompt: 'Nếu bạn bấm trúng viên pin thì +5 năng lượng, nếu để Pin chạm cạnh dưới thì bạn -5 điểm. Với điều kiện này nên sử dụng câu lệnh điều kiện nào?',
+      prompt: 'Nếu bạn bấm trúng viên pin thì +5 năng lượng, nếu để Pin chạm cạnh dưới thì bạn -5 điểm. Với điều kiện trên nên sử dụng câu lệnh rẽ nhánh nào?',
       options: ['if then', 'if then else', '2 câu if then'],
       correct: 2
     }
@@ -62,6 +64,44 @@ const ENERGY_QUIZZES: Partial<Record<StationId, { prompt: string; options: strin
     {
       prompt: 'Nếu click đủ 120 lần trong 30s thì thành công, nếu không thì thông báo thất bại. Với điều kiện này nên áp dụng trong trường hợp này là gì?',
       options: ['If then', 'If then else', 'nhiều câu lệnh if then'],
+      correct: 1
+    }
+  ],
+  4: [
+    {
+      prompt: 'Câu lệnh rẽ nhánh sử dụng trong chương trình trên là gì?',
+      options: [],
+      correct: 0,
+      typed: 'if then else'
+    },
+    {
+      prompt: 'Tại sao không sử dụng câu lệnh rẽ nhánh If Then?',
+      options: [
+        'Vì chương trình cần thông báo 2 trường hợp khi đúng và khi sai mật khẩu',
+        'Vì chương trình có 3 trường hợp cần thông báo',
+        'Sử dụng cái nào cũng được'
+      ],
+      correct: 0
+    }
+  ],
+  5: [
+    {
+      prompt: 'Chương trình hạ nhiệt dùng câu lệnh rẽ nhánh nào?',
+      options: ['If then', 'If then else', 'Hai câu if then'],
+      correct: 1
+    },
+    {
+      prompt: 'Vì sao chương trình “Nhiệt độ < 60” không hạ nhiệt được?',
+      options: [
+        'Vì robot đang nóng hơn 60, nhánh làm mát không chạy',
+        'Vì chương trình không có khối say',
+        'Vì chương trình thiếu nhánh else'
+      ],
+      correct: 0
+    },
+    {
+      prompt: 'Nếu chỉ dùng If then thì khi nhiệt độ đã an toàn, chương trình có báo “Đang hoạt động” không?',
+      options: ['Có', 'Không'],
       correct: 1
     }
   ]
@@ -88,6 +128,7 @@ export const Screen03Question: React.FC<Screen03QuestionProps> = ({
   const [selectedOpt, setSelectedOpt] = useState<'A' | 'B' | null>(null);
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizWrong, setQuizWrong] = useState(false);
+  const [typedValue, setTypedValue] = useState('');
 
   const handleSolved = () => {
     setSolved(true);
@@ -103,11 +144,24 @@ export const Screen03Question: React.FC<Screen03QuestionProps> = ({
       return;
     }
     setQuizWrong(false);
+    setTypedValue('');
     if (quizIndex < (energyQuizItems?.length ?? 1) - 1) {
       setQuizIndex(quizIndex + 1);
       return;
     }
-    onSelectOption(stationNo === 3 ? 'B' : 'A');
+    onSelectOption(stationNo === 3 || stationNo === 5 ? 'B' : 'A');
+  };
+
+  const answerTyped = () => {
+    if (isSubmitting) return;
+    const current = energyQuizItems?.[quizIndex];
+    if (!current?.typed) return;
+    const typed = typedValue.trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ');
+    if (typed !== current.typed) {
+      setQuizWrong(true);
+      return;
+    }
+    answerQuiz(current.correct);
   };
 
   const handleChoose = (opt: 'A' | 'B') => {
@@ -183,13 +237,40 @@ export const Screen03Question: React.FC<Screen03QuestionProps> = ({
       <InteractiveStationMinigame stationNo={stationNo} onSolved={handleSolved} />
 
       {energyQuiz && solved && (
-        <div className="rounded-3xl border border-slate-700 bg-slate-900 p-5 shadow-xl space-y-4">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4">
+        <div className="w-full max-w-2xl rounded-3xl border border-slate-700 bg-slate-900 p-5 shadow-2xl space-y-4">
           <div className="flex items-start justify-between gap-3">
             <h3 className="text-sm sm:text-base font-black text-white leading-snug">
               Câu {quizIndex + 1}. {energyQuizItems?.[quizIndex].prompt}
             </h3>
             <span className="shrink-0 text-[11px] font-mono text-cyan-300">{quizIndex + 1}/{energyQuizItems?.length}</span>
           </div>
+          {energyQuizItems?.[quizIndex].typed ? (
+            <form
+              className="flex flex-col gap-2 sm:flex-row"
+              onSubmit={(event) => {
+                event.preventDefault();
+                answerTyped();
+              }}
+            >
+              <input
+                value={typedValue}
+                onChange={(event) => {
+                  setTypedValue(event.target.value);
+                  setQuizWrong(false);
+                }}
+                disabled={isSubmitting}
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                placeholder="Nhập câu lệnh"
+                className="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm font-semibold text-slate-100"
+              />
+              <button type="submit" disabled={isSubmitting} className="rounded-xl bg-cyan-500 px-5 py-3 text-sm font-black text-slate-950">
+                Trả lời
+              </button>
+            </form>
+          ) : (
           <div className="grid grid-cols-1 gap-2">
             {energyQuizItems?.[quizIndex].options.map((label, index) => (
               <button
@@ -203,8 +284,10 @@ export const Screen03Question: React.FC<Screen03QuestionProps> = ({
               </button>
             ))}
           </div>
-          {quizWrong && <p className="text-sm font-medium text-amber-200">Chưa đúng. Hãy chọn lại câu này.</p>}
+          )}
+          {quizWrong && <p className="text-sm font-medium text-amber-200">Chưa đúng. Hãy làm lại câu này.</p>}
           {isSubmitting && <p className="text-center text-xs text-cyan-400 font-mono">Đang xác thực câu trả lời...</p>}
+        </div>
         </div>
       )}
 

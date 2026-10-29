@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { RobotAvatar } from '../components/RobotAvatar';
 import { PlayData } from '../../shared/types';
 import { QUESTIONS_DB } from '../../shared/questions';
-import { Trophy, Award, CheckCircle, ChevronDown, ChevronUp, BookOpen, Clock } from 'lucide-react';
+import { sounds } from '../utils/sound';
+import { Award, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
+
+const CONFETTI = Array.from({ length: 36 }, (_, index) => ({
+  id: index,
+  left: `${(index * 17) % 100}%`,
+  delay: `${(index % 12) * 0.12}s`,
+  color: ['#34d399', '#67e8f9', '#fbbf24', '#fb7185', '#a78bfa'][index % 5],
+  rotate: `${(index % 8) * 45}deg`
+}));
 
 interface Screen07CompletedProps {
   play: PlayData;
@@ -11,59 +20,81 @@ interface Screen07CompletedProps {
 export const Screen07Completed: React.FC<Screen07CompletedProps> = ({ play }) => {
   const [expandedStation, setExpandedStation] = useState<number | null>(null);
 
+  useEffect(() => {
+    sounds.playPowerUp();
+    const again = window.setTimeout(() => sounds.playBeep(true), 280);
+    return () => window.clearTimeout(again);
+  }, []);
+
+  const issuedOn = new Date().toLocaleDateString('vi-VN');
+
   const toggleStation = (st: number) => {
     setExpandedStation((prev) => (prev === st ? null : st));
   };
 
   return (
     <div className="max-w-3xl mx-auto p-4 sm:p-6 my-4 space-y-6">
-      {/* Victory Banner */}
-      <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-950 border border-emerald-500/60 rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-4 relative overflow-hidden">
-        <div className="flex flex-col items-center">
-          <RobotAvatar mood="victory" size="xl" />
-          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-emerald-900/80 border border-emerald-500 rounded-full text-emerald-300 text-xs sm:text-sm font-black mt-2">
-            <Trophy className="w-4 h-4 text-amber-400" />
-            NHIỆM VỤ HOÀN THÀNH XUẤT SẮC!
+      <style>{`
+        @keyframes rescue-confetti {
+          0% { transform: translateY(-12vh) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+        @keyframes rescue-burst {
+          0% { transform: scale(0.6); opacity: 0; }
+          30% { transform: scale(1.08); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes rescue-glow {
+          50% { box-shadow: 0 0 40px rgba(52, 211, 153, 0.45); }
+        }
+      `}</style>
+      <div className="pointer-events-none fixed inset-0 z-40 overflow-hidden" aria-hidden>
+        {CONFETTI.map((piece) => (
+          <span
+            key={piece.id}
+            className="absolute top-0 h-3 w-2 rounded-sm"
+            style={{
+              left: piece.left,
+              background: piece.color,
+              animation: `rescue-confetti 3.2s ease-in ${piece.delay} forwards`,
+              transform: `rotate(${piece.rotate})`
+            }}
+          />
+        ))}
+      </div>
+      <div
+        className="relative overflow-hidden rounded-[2rem] bg-gradient-to-b from-amber-950 via-slate-950 to-emerald-950 p-3 shadow-2xl"
+        style={{ animation: 'rescue-burst 0.7s ease-out, rescue-glow 1.8s ease-in-out 0.7s infinite' }}
+      >
+        <div className="rounded-[1.6rem] border-2 border-amber-300/80 bg-slate-950/80 px-5 py-7 text-center sm:px-10">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-amber-300 bg-amber-400/15">
+            <Award className="h-7 w-7 text-amber-300" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white mt-2">
-            Robot đã được giải cứu an toàn!
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
-            Chúc mừng <strong>{play.fullName}</strong> ({play.classCode})! Em đã chinh phục trọn vẹn 5 trạm thử thách, kích hoạt thành công lối thoát hiểm bằng cách chọn đúng cấu trúc điều khiển rẽ nhánh trong Scratch.
+          <p className="text-xs font-black uppercase tracking-[0.35em] text-amber-300">Chứng nhận</p>
+          <div className="mt-4 flex justify-center">
+            <RobotAvatar mood="victory" size="lg" />
+          </div>
+          <p className="mt-4 text-sm text-slate-300">Chứng nhận bạn</p>
+          <h2 className="mt-1 text-3xl font-black text-amber-100 sm:text-4xl">{play.fullName}</h2>
+          <p className="mt-1 text-sm font-semibold text-cyan-200">Lớp {play.classCode}</p>
+          <p className="mx-auto mt-4 max-w-md text-base font-semibold leading-relaxed text-white sm:text-lg">
+            đã hoàn thành xuất sắc việc giải cứu robot
           </p>
-        </div>
-
-        {/* Scorecard Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-800 text-left">
-          <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800">
-            <span className="text-[10px] text-slate-400 uppercase font-mono block">Đúng ngay lần đầu</span>
-            <div className="text-xl sm:text-2xl font-black text-emerald-400 mt-1 flex items-baseline gap-1">
-              <span>{play.firstTryCorrectCount}</span>
-              <span className="text-xs text-slate-500 font-normal">/ 5 câu</span>
+          <div className="mx-auto mt-4 h-px w-40 bg-gradient-to-r from-transparent via-amber-300 to-transparent" />
+          <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-slate-400">Đúng lần đầu</p>
+              <p className="text-lg font-black text-emerald-300">{play.firstTryCorrectCount}/5</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-slate-400">Lượt trả lời</p>
+              <p className="text-lg font-black text-cyan-300">{play.totalAttempts}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-slate-400">Ngày cấp</p>
+              <p className="text-lg font-black text-amber-200">{issuedOn}</p>
             </div>
           </div>
-
-          <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800">
-            <span className="text-[10px] text-slate-400 uppercase font-mono block">Tổng lượt trả lời</span>
-            <div className="text-xl sm:text-2xl font-black text-cyan-400 mt-1 flex items-baseline gap-1">
-              <span>{play.totalAttempts}</span>
-              <span className="text-xs text-slate-500 font-normal">({play.wrongAttempts} lần sai)</span>
-            </div>
-          </div>
-
-          <div className="col-span-2 sm:col-span-1 p-3 bg-slate-950 rounded-2xl border border-slate-800">
-            <span className="text-[10px] text-slate-400 uppercase font-mono block">Trạng thái tiết học</span>
-            <div className="text-sm font-bold text-amber-400 mt-1 flex items-center gap-1.5">
-              <CheckCircle className="w-4 h-4 text-emerald-400" />
-              Đã ghi nhận kết quả
-            </div>
-          </div>
-        </div>
-
-        {/* Single Session Lock Rule notice */}
-        <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 text-[11px] text-slate-400 flex items-center justify-center gap-2">
-          <Clock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-          <span>Tiến trình và kết quả đã được lưu trữ chính thức. Không thể chơi lại trong tiết học này.</span>
         </div>
       </div>
 

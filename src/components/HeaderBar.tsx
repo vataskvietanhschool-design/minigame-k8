@@ -33,7 +33,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             <h1 className="text-sm sm:text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
               <span>GIẢI CỨU ROBOT</span>
               <span className="hidden sm:inline-block text-xs font-semibold px-2 py-0.5 bg-cyan-950 text-cyan-300 border border-cyan-800 rounded-full">
-                Bài 14: Scratch 8
+                Môn Tin học
               </span>
             </h1>
             <p className="text-[11px] text-slate-400 font-medium hidden md:block">

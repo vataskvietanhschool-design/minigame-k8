@@ -80,50 +80,48 @@ export const QUESTIONS_DB: Record<StationId, QuestionData> = {
   },
   4: {
     stationNo: 4,
-    title: 'Trạm 4 – Ước của hai số',
+    title: 'Trạm 4 – Mật khẩu hệ thống',
     scenario:
-      'Có hai số nguyên A, B (đảm bảo A ≥ B). Nếu số A chia hết cho số B thì hiển thị “B là ước của A”.',
-    question:
-      'Có hai số nguyên A, B (đảm bảo A ≥ B). Nếu số A chia hết cho số B thì hiển thị “B là ước của A”.',
-    optionA: '/assets/hinhcauhoi/k8_b14_game_tuong_tac/cau1_a.png',
-    optionB: '/assets/hinhcauhoi/k8_b14_game_tuong_tac/cau1_b.png',
+      'Hệ thống không báo mật khẩu đúng hay sai. Nhập quá nhiều lần thì máy tự khóa. Cần chương trình báo thành công khi đúng và báo sai mật khẩu khi sai.',
+    question: 'Chương trình báo hai trường hợp đúng và sai mật khẩu. Câu lệnh rẽ nhánh nào phù hợp?',
+    optionA: 'If then else',
+    optionB: 'if then',
     correctOption: 'A',
     hints: [
-      'Đề chỉ nói việc cần làm khi A chia hết cho B. Có yêu cầu thêm câu khi không chia hết không?',
-      'Nếu đề không nêu việc làm khi điều kiện sai, chương trình không cần nhánh “nếu không thì”.',
-      'Chương trình đúng chỉ có: nếu A chia lấy dư B = 0 thì nói B là ước của A.'
+      'Chương trình cần báo mấy trường hợp?',
+      'If then chỉ làm việc khi điều kiện đúng. Khi mật khẩu sai thì sao?',
+      'Đúng thì nói thành công, sai thì nói sai mật khẩu, nên dùng if then else.'
     ],
     explanation: {
-      correctChoice: 'A. if then — chỉ nói “B là ước của A” khi A chia hết cho B.',
+      correctChoice: 'A. If then else',
       reason:
-        'Đề chỉ yêu cầu một việc: nếu A chia hết cho B thì hiển thị “B là ước của A”. Đề không yêu cầu thông báo khi A không chia hết cho B, nên không thêm nhánh “nếu không thì”.',
+        'Chương trình cần thông báo khi mật khẩu đúng và khi mật khẩu sai. If then chỉ xử lý một trường hợp, nên dùng if then else.',
       branchesAnalysis:
-        'Hình A chỉ có khối nếu A chia lấy dư B = 0 thì nói B là ước của A. Hình B thêm câu “không là ước của A”. Đó là việc đề không yêu cầu.',
+        'Mật khẩu đúng: nói Thành công. Mật khẩu sai: nói Sai Mật khẩu.',
       takeaway:
-        'Khi bài chỉ nói việc cần làm nếu điều kiện đúng, dùng if then. Chỉ dùng if then else khi đề nêu rõ việc làm khi điều kiện sai.'
+        'Khi một điều kiện có hai việc khác nhau lúc đúng và lúc sai, dùng if then else.'
     }
   },
   5: {
     stationNo: 5,
-    title: 'Trạm 5 – Số chẵn và số lẻ',
+    title: 'Trạm 5 – Hạ nhiệt robot',
     scenario:
-      'Có một số nguyên N (đảm bảo N khác 0). Nếu số N chia hết cho 2 thì hiển thị “là số chẳn”. Ngược lại, hiển thị “là số lẻ”.',
-    question:
-      'Có một số nguyên N (đảm bảo N khác 0). Nếu số N chia hết cho 2 thì hiển thị “là số chẳn”. Ngược lại, hiển thị “là số lẻ”.',
-    optionA: '/assets/hinhcauhoi/k8_b14_game_tuong_tac/cau2_a.png',
-    optionB: '/assets/hinhcauhoi/k8_b14_game_tuong_tac/cau2_b.png',
+      'Robot đang quá nóng. Nếu nhiệt độ trên 60 thì báo đang làm mát. Nếu không thì báo đang hoạt động bình thường.',
+    question: 'Chương trình hạ nhiệt đúng dùng câu lệnh rẽ nhánh nào?',
+    optionA: 'if then',
+    optionB: 'if then else',
     correctOption: 'B',
     hints: [
-      'Đề có hai kết quả khác nhau: chia hết cho 2 và không chia hết cho 2.',
-      'Điều kiện cần kiểm tra là N chia hết cho 2, không phải N bằng 0.',
-      'Nếu N chia lấy dư 2 = 0 thì nói là số chẳn; nếu không thì nói là số lẻ.'
+      'Chương trình có báo khi robot đang hoạt động bình thường không?',
+      'Nhiệt độ robot đang cao hơn 60. Điều kiện “nhỏ hơn 60” có chạy nhánh làm mát không?',
+      'Nhiệt độ trên 60 thì làm mát, không thì báo đang hoạt động, nên dùng if then else.'
     ],
     explanation: {
-      correctChoice: 'B. if then else — chia hết cho 2 thì là số chẳn, ngược lại là số lẻ.',
+      correctChoice: 'B. if then else',
       reason:
-        'Đề yêu cầu hai thông báo. Nếu N chia hết cho 2 thì hiển thị “là số chẳn”. Ngược lại hiển thị “là số lẻ”. Chương trình cần đủ hai nhánh.',
+        'Nhiệt độ trên 60 thì báo đang làm mát. Nhiệt độ không còn cao thì báo đang hoạt động. Cần cả hai nhánh, và điều kiện phải là lớn hơn 60.',
       branchesAnalysis:
-        'Hình B kiểm tra N chia lấy dư 2 = 0: nhánh thì nói là số chẳn, nhánh không thì nói là số lẻ. Hình A kiểm tra N = 0 và luôn nói là số lẻ, nên không đúng đề.',
+        'Đúng: nếu nhiệt độ > 60 thì “Đang làm mát”, else “Đang hoạt động”. Sai nếu chỉ có if then, hoặc nếu điều kiện là nhiệt độ < 60.',
       takeaway:
         'Khi có việc làm nếu điều kiện đúng và việc làm khác nếu điều kiện sai, dùng if then else.'
     }

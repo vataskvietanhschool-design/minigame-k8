@@ -62,16 +62,16 @@ test('TC11: Trạm 2 câu hỏi "vì sao" có đáp án A', () => {
   assert.equal(correctRes.phase, 'EXPLANATION');
 });
 
-test('TC12: Trạm 4 ước số có đáp án A', () => {
+test('TC12: Trạm 4 mật khẩu có đáp án A', () => {
   const ansB = evaluateStationAnswer(4, 'B', 0);
   assert.equal(ansB.isCorrect, false);
 
   const ansA = evaluateStationAnswer(4, 'A', 1);
   assert.equal(ansA.isCorrect, true);
-  assert.match(ansA.explanation?.reason || '', /chia hết cho B/);
+  assert.match(ansA.explanation?.reason || '', /mật khẩu/);
 });
 
-test('TC13: Trạm 5 chẵn lẻ có đáp án B', () => {
+test('TC13: Trạm 5 hạ nhiệt có đáp án B', () => {
   const ansA = evaluateStationAnswer(5, 'A', 0);
   assert.equal(ansA.isCorrect, false);
 

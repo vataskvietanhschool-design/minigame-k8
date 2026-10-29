@@ -18,6 +18,8 @@ import {
 import { sounds } from '../utils/sound';
 import { Station1EnergyCatch } from './Station1EnergyCatch';
 import { Station3RobotCharge } from './Station3RobotCharge';
+import { Station4BlockBench } from './Station4BlockBench';
+import { Station5CoolDown } from './Station5CoolDown';
 
 interface InteractiveStationMinigameProps {
   stationNo: StationId;
@@ -1307,12 +1309,12 @@ export const InteractiveStationMinigame: React.FC<InteractiveStationMinigameProp
       {/* ================================================================ */}
       {/* TRẠM 4: MINIGAME LÒ LỬA THIÊU HỦY & KÉO XÔ NƯỚC LÀM MÁT          */}
       {/* ================================================================ */}
-      {stationNo === 4 && <Station4FurnaceWaterMinigame onSolved={onSolved} />}
+      {stationNo === 4 && <Station4BlockBench onSolved={onSolved} />}
 
       {/* ================================================================ */}
       {/* TRẠM 5: MINIGAME GẮP LINH KIỆN VÀO HỘP NHIỆM VỤ (0/5)             */}
       {/* ================================================================ */}
-      {stationNo === 5 && <Station5ComponentBoxMinigame onSolved={onSolved} />}
+      {stationNo === 5 && <Station5CoolDown onSolved={onSolved} />}
     </div>
   );
 };

@@ -94,7 +94,7 @@ export const Screen01Start: React.FC<Screen01StartProps> = ({
           <RobotAvatar mood="idle" size="lg" />
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-cyan-950/80 border border-cyan-800 rounded-full text-cyan-300 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            Tin học lớp 8 – Bài 14: Scratch
+            Môn Tin học
           </div>
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
             GIẢI CỨU ROBOT
@@ -103,7 +103,7 @@ export const Screen01Start: React.FC<Screen01StartProps> = ({
             Chọn nhánh đúng (If-Then & If-Then-Else)
           </p>
           <p className="text-xs text-slate-400 max-w-sm">
-            Robot phòng thí nghiệm đang gặp sự cố và bị mắc kẹt. Em hãy đồng hành cùng robot chinh phục 5 trạm thử thách để mở lối thoát hiểm!
+            Robot đang hết năng lượng, chưa kích hoạt, bị khóa mật khẩu và quá nóng. Em hãy đi qua 5 trạm, chọn đúng câu lệnh rẽ nhánh để giải cứu robot.
           </p>
         </div>
 
