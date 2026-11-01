@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { sounds } from '../utils/sound';
 
-type Cell = { id: number; x: number; y: number };
+type Cell = { id: number; x: number; y: number; settled?: boolean };
 type Burst = { id: number; x: number; y: number; kind: 'hit' | 'miss' };
 
 function PinIcon() {
@@ -49,9 +49,18 @@ export const Station1EnergyCatch: React.FC<Station1EnergyCatchProps> = ({
       const missed: Cell[] = [];
       const kept: Cell[] = [];
       for (const cell of cellsRef.current) {
-        const next = { ...cell, y: cell.y + dt * fallSpeed };
-        if (next.y < 108) kept.push(next);
-        else missed.push(next);
+        if (cell.settled) {
+          kept.push(cell);
+          continue;
+        }
+        const nextY = cell.y + dt * fallSpeed;
+        if (!penalizeMiss && nextY >= 93) {
+          kept.push({ ...cell, y: 93, settled: true });
+        } else if (nextY < 108) {
+          kept.push({ ...cell, y: nextY });
+        } else {
+          missed.push({ ...cell, y: nextY });
+        }
       }
       if (spawnWait.current >= 780) {
         spawnWait.current = 0;
@@ -139,8 +148,8 @@ export const Station1EnergyCatch: React.FC<Station1EnergyCatchProps> = ({
             key={cell.id}
             type="button"
             onClick={() => catchCell(cell)}
-            className="absolute grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center"
-            style={{ left: `${cell.x}%`, top: `${cell.y}%` }}
+            className={`absolute grid h-11 w-11 place-items-center ${cell.settled ? '-translate-x-1/2' : '-translate-x-1/2 -translate-y-1/2'}`}
+            style={cell.settled ? { left: `${cell.x}%`, bottom: 0 } : { left: `${cell.x}%`, top: `${cell.y}%` }}
             aria-label="Thu pin 5%"
           >
             <PinIcon />
